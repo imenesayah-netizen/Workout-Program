@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Workout Programme"/>
+<meta name="description" content="12-Week Hybrid Training Tracker"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>Workout Programme</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#0a0a0f}
+  body{font-family:'DM Sans',sans-serif;color:#e8e8f0;overscroll-behavior:none}
+  input,textarea,button{font-family:inherit}
+  #root{min-height:100%;min-height:100dvh}
+
+  /* Safe area padding for notched phones */
+  .safe-wrap{
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Grid bg */
+  .grid-bg{
+    position:fixed;inset:0;
+    background-image:
+      linear-gradient(rgba(232,255,71,.018) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(232,255,71,.018) 1px,transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;z-index:0;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#1e1e2e;border-radius:4px}
+
+  /* Transitions */
+  .fade-in{animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Toast */
+  .toast{
+    position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;transform:translateX(-50%);
+    background:#e8ff47;color:#0a0a0f;padding:10px 20px;border-radius:100px;
+    font-family:'DM Mono',monospace;font-size:12px;font-weight:700;z-index:9999;
+    box-shadow:0 4px 24px rgba(232,255,71,.4);white-space:nowrap;
+    animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+// ─── COLOURS ──────────────────────────────────────────────────────────────────
+const C = {
+  bg:"#0a0a0f", surface:"#111118", card:"#16161f", border:"#1e1e2e",
+  accent:"#e8ff47", blue:"#47c8ff", text:"#e8e8f0", muted:"#5a5a72",
+};
+const TAG_STYLES = {
+  hybrid:{ bg:"rgba(232,255,71,.12)", color:"#e8ff47" },
+  lower: { bg:"rgba(192,132,252,.12)", color:"#c084fc" },
+  cond:  { bg:"rgba(71,200,255,.12)",  color:"#47c8ff" },
+  upper: { bg:"rgba(251,146,60,.12)",  color:"#fb923c" },
+  rest:  { bg:"rgba(90,90,114,.12)",   color:"#5a5a72" },
+};
+
+// ─── PROGRAM DATA ─────────────────────────────────────────────────────────────
+const PHASES = [
+  {
+    id:1,label:"Phase 1",title:"FOUNDATION",wks:"Weeks 1–4",
+    desc:"Establish patterns, aerobic base, heavy band assistance.",
+    weeks:{
+      1:{h:"WEEK 1 — Orientation",  rest:"90s str · 60s cond",rpe:"RPE 7",  pu:"Thick band · 3×6 · Full ROM priority"},
+      2:{h:"WEEK 2 — Add Volume",   rest:"90s str · 60s cond",rpe:"RPE 7–8",pu:"Thick band · 3×8 · +2 reps vs Wk1"},
+      3:{h:"WEEK 3 — Add Intensity",rest:"75s str · 45s cond",rpe:"RPE 8",  pu:"Thick band · 4×6 · +1 set vs Wk2"},
+      4:{h:"WEEK 4 — Deload",       rest:"90s all",           rpe:"RPE 6–7",pu:"Thick band · 3×5 · Focus lat squeeze"},
+    }
+  },
+  {
+    id:2,label:"Phase 2",title:"BUILD",wks:"Weeks 5–8",
+    desc:"Increase load & density. Transition to medium band.",
+    weeks:{
+      5:{h:"WEEK 5 — Reload",     rest:"75s str · 45s cond",rpe:"RPE 8",  pu:"Medium band · 3×6 · 3s eccentric"},
+      6:{h:"WEEK 6 — Add Volume", rest:"75s str · 45s cond",rpe:"RPE 8",  pu:"Medium band · 4×6 · Pause 1s at top"},
+      7:{h:"WEEK 7 — Overload",   rest:"60s str · 40s cond",rpe:"RPE 8–9",pu:"Medium band · 4×8 · Max quality reps"},
+      8:{h:"WEEK 8 — Deload",     rest:"90s all",           rpe:"RPE 6–7",pu:"Medium band · 3×5 · Perfect form only"},
+    }
+  },
+  {
+    id:3,label:"Phase 3",title:"PEAK",wks:"Weeks 9–12",
+    desc:"Peak output. Thin band + unassisted pull-up attempts.",
+    weeks:{
+      9: {h:"WEEK 9 — Intensify", rest:"60s str · 30s cond",rpe:"RPE 8–9",pu:"Thin band · 4×5 + 1 unassisted attempt/set"},
+      10:{h:"WEEK 10 — Push",     rest:"60s str · 30s cond",rpe:"RPE 9",  pu:"Thin band · 4×6 + 2 unassisted attempts"},
+      11:{h:"WEEK 11 — Peak",     rest:"60s str · 30s cond",rpe:"RPE 9",  pu:"Thin band · 4×6 + 3 unassisted attempts"},
+      12:{h:"WEEK 12 — Test Week",rest:"90s all",           rpe:"RPE 8",  pu:"🎯 MAX unassisted test · Then thin band sets"},
+    }
+  },
+];
+
+function phOf(w){return w<=4?1:w<=8?2:3;}
+function wNote(w){return PHASES[phOf(w)-1].weeks[w];}
+
+function getDays(w) {
+  const p=phOf(w), note=wNote(w), puBand=note.pu;
+  const sqS=p===1?"3×5":p===2?"4×4":"4×3";
+  const rdlS=p===1?"3×8":p===2?"4×8":"4×6";
+  const rowS=p===1?"3×6":p===2?"4×6":"4×5";
+  const bpS=p===1?"3×6":p===2?"4×5":"4×4";
+  const dlS=p===1?"4×3":p===2?"4×3":"5×2";
+  const fsS=p===1?"3×5":p===2?"4×4":"4×3";
+  const bssS=p===1?"3×8":p===2?"3×10":"4×8";
+  const htS=p===1?"3×10":p===2?"4×10":"4×12";
+  const ohpS=p===1?"3×5":p===2?"4×5":"4×4";
+  const puS=p===1?"3×6":p===2?"4×6":"4×6";
+  const ppS=p===1?"3×5":p===2?"4×5":"4×4";
+  const tdlS=p===1?"4×5":p===2?"4×5":"4×4";
+  const emom=p===1?"16 min":p===2?"20 min":"24 min";
+  const ftR=p===1?"3 rounds":p===2?"4 rounds":"5 rounds";
+  const intv=p===1?"4×2 min hard":p===2?"5×2 min hard":"6×90s hard";
+  const amrp=p===1?"8 min":p===2?"10 min":"12 min";
+  const finR=p===1?"2 rounds":"3 rounds";
+
+  return [
+    {num:"MON",name:"Monday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:85,ic:"#e8ff47",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[{id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build"},{id:"mon-wu-2",ic:"🔄",n:"Hip circles + T-spine rotations",s:"2×8 each",note:""}]},
+      {lbl:"Strength Superset A — 20 min",exs:[{id:"mon-a1",ic:"🏋️",n:"Back Squat",s:sqS,note:"Heavy. Superset with row."},{id:"mon-a2",ic:"🔙",n:"Barbell Bent-Over Row",s:rowS,note:"Rest 90s between supersets"}]},
+      {lbl:"Strength Superset B — 15 min",exs:[{id:"mon-b1",ic:"💪",n:"Bench Press",s:bpS,note:"Superset with RDL"},{id:"mon-b2",ic:"🏋️",n:"Romanian Deadlift",s:rdlS,note:"3s controlled eccentric"}]},
+      {lbl:`Hybrid Finisher — ${finR}`,fin:true,cs:[{n:"KB Swings",v:"15 reps"},{n:"Box Jumps",v:"8 reps"},{n:"Push-Up to DB Row",v:"10 reps"},{n:"Rest",v:"60s"}]},
+    ]},
+    {num:"TUE",name:"Tuesday",title:"Lower Body Power",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[{id:"tue-wu-1",ic:"🚴",n:"Assault bike easy",s:"3 min",note:""},{id:"tue-wu-2",ic:"⚡",n:"BW Jump squats + leg swings",s:"2×10",note:"CNS activation"}]},
+      {lbl:"Main Power — 22 min",exs:[{id:"tue-a1",ic:"🏋️",n:"Conventional Deadlift",s:dlS,note:"90%+ 1RM · explosive concentric"},{id:"tue-a2",ic:"🦵",n:"Front Squat",s:fsS,note:"Speed out of hole"}]},
+      {lbl:"Accessory — 18 min",exs:[{id:"tue-b1",ic:"🦵",n:"Bulgarian Split Squat",s:bssS,note:"Loaded · slow eccentric"},{id:"tue-b2",ic:"🍑",n:"Barbell Hip Thrust",s:htS,note:"Full glute extension at top"}]},
+      {lbl:"Finisher — 2 rounds",fin:true,cs:[{n:"Wall sit",v:"30s"},{n:"Lateral band walks",v:"15 steps each"},{n:"Single-leg RDL",v:"8/side"},{n:"Rest",v:"60s"}]},
+    ]},
+    {num:"WED",name:"Wednesday",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[{id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1×",note:""},{id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm swings"}]},
+      {lbl:`EMOM — ${emom}`,exs:[{id:"wed-a1",ic:"⏱️",n:"Min 1: Burpee box jump-over",s:"8 reps",note:""},{id:"wed-a2",ic:"⏱️",n:"Min 2: Row / ski erg",s:"200m",note:""},{id:"wed-a3",ic:"⏱️",n:"Min 3: DB Thrusters",s:"10 reps",note:"Moderate load"},{id:"wed-a4",ic:"⏱️",n:"Min 4: Active rest",s:"—",note:"Walk + breathe"}]},
+      {lbl:"For Time — 20 min cap",exs:[{id:"wed-b1",ic:"🏃",n:`${ftR}: 400m run + 12 wall balls`,s:"For time",note:"Pace conservatively on round 1"}]},
+      {lbl:"Cool-Down — 5 min",fin:true,cs:[{n:"Hip flexor hold",v:"60s/side"},{n:"Diaphragmatic breathing",v:"2 min"}]},
+    ]},
+    {num:"THU",name:"Thursday",title:"Upper Body Strength",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[{id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"2×15",note:""},{id:"thu-wu-2",ic:"🤸",n:"Scap push-ups + dead hangs",s:"2×8",note:"Prime the lats"}]},
+      {lbl:"Press + Pull Superset A — 20 min",exs:[{id:"thu-a1",ic:"💪",n:"Overhead Press (Barbell)",s:ohpS,note:"Superset with banded pull-ups"},{id:"thu-a2",ic:"🔵",n:"Banded Pull-Ups",s:puS,note:"",banded:true}]},
+      {lbl:"Press + Pull Superset B — 15 min",exs:[{id:"thu-b1",ic:"💪",n:"Incline DB Press",s:"3×10",note:"Superset with cable row"},{id:"thu-b2",ic:"🔙",n:"Seated Cable Row",s:"3×12",note:"3s eccentric · drive elbows back"}]},
+      {lbl:"Shoulder Health + Arms — 10 min",fin:true,cs:[{n:"Face pull w/ ext. rotation",v:"3×15"},{n:"EZ-bar curl",v:"2×12"},{n:"Farmer carries",v:"2×20m"}]},
+    ]},
+    {num:"FRI",name:"Friday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:92,ic:"#e8ff47",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[{id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR"},{id:"fri-wu-2",ic:"🔄",n:"Ankle + hip mobility",s:"1 min",note:""}]},
+      {lbl:"Complex A — Lower — 18 min",exs:[{id:"fri-a1",ic:"🏋️",n:"Trap Bar Deadlift",s:tdlS,note:"Explosive concentric"},{id:"fri-a2",ic:"⚡",n:"Broad Jumps (after each set)",s:"4×4",note:"Post-activation potentiation"}]},
+      {lbl:"Complex B — Upper — 15 min",exs:[{id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout"},{id:"fri-b2",ic:"🔵",n:"Banded Pull-Ups (chest-to-bar)",s:puS,note:"",banded:true}]},
+      {lbl:`AMRAP — ${amrp}`,fin:true,cs:[{n:"DB Snatch (alternating)",v:"8 reps"},{n:"Bar-facing burpees",v:"5 reps"},{n:"Goblet squat",v:"10 reps"}]},
+    ]},
+    {num:"SAT",name:"Saturday",title:"Conditioning + Endurance",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
+      {lbl:"Aerobic Base — 18 min",exs:[{id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:"13 min",note:"65–70% MHR · nasal breathing"},{id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs"}]},
+      {lbl:`Lactate Intervals — ${intv}`,exs:[{id:"sat-a1",ic:"⚡",n:`${intv} / 90s easy`,s:"Assault bike or row",note:"90–95% MHR on work"}]},
+      {lbl:"Skill + Core — 12 min",exs:[{id:"sat-b1",ic:"🤸",n:"Wall walks or HS hold",s:"4×30s",note:""},{id:"sat-b2",ic:"🔵",n:"Scapular pull-ups (dead hang shrug)",s:"3×10",note:"No band needed · builds unassisted strength"},{id:"sat-b3",ic:"🤸",n:"L-sit hold",s:"3×15s",note:"Parallel bars or floor"}]},
+      {lbl:"Cool-Down — 5 min",fin:true,cs:[{n:"Foam roll legs",v:"2 min"},{n:"Pigeon pose",v:"90s/side"}]},
+    ]},
+    {num:"SUN",name:"Sunday",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
+  ].map(d=>({...d,puBand}));
+}
+
+// ─── LOCAL STORAGE (works offline, persists on device) ───────────────────────
+const LS_KEY = "workout-programme-v1";
+function lsLoad(){try{const r=localStorage.getItem(LS_KEY);return r?JSON.parse(r):{}}catch{return {}}}
+function lsSave(d){try{localStorage.setItem(LS_KEY,JSON.stringify(d))}catch(e){console.error(e)}}
+
+// ─── APP ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [allData, setAllData] = useState(null);
+  const [cWeek, setCWeek] = useState(1);
+  const [cDayIdx, setCDayIdx] = useState(0);
+  const [saveStatus, setSaveStatus] = useState("idle");
+  const [toast, setToast] = useState(null);
+  const [view, setView] = useState("workout"); // workout | progress
+  const saveTimer = useRef(null);
+
+  useEffect(()=>{
+    const d = lsLoad();
+    setAllData(d);
+    if(d.__pos){setCWeek(d.__pos.week||1);setCDayIdx(d.__pos.dayIdx??0);}
+  },[]);
+
+  const dayKey = `w${cWeek}-d${cDayIdx}`;
+  const days = allData ? getDays(cWeek) : [];
+  const day = days[cDayIdx];
+  const dayData = allData?.[dayKey] || {};
+
+  const triggerSave = useCallback((newAll)=>{
+    setSaveStatus("saving");
+    if(saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(()=>{lsSave(newAll);setSaveStatus("saved");},600);
+  },[]);
+
+  function updateDayData(patch){
+    const newAll={...allData,[dayKey]:{...dayData,...patch},__pos:{week:cWeek,dayIdx:cDayIdx}};
+    setAllData(newAll);triggerSave(newAll);
+  }
+
+  function toggleEx(id){const done={...(dayData.done||{})};done[id]=!done[id];updateDayData({done});}
+  function setNote(v){updateDayData({note:v});}
+  function setRpe(v){updateDayData({rpe:v});}
+  function setDur(v){updateDayData({duration:v});}
+
+  function nextPos(){
+    let nd=cDayIdx+1,nw=cWeek;
+    if(nd>=7){nd=0;nw=Math.min(cWeek+1,12);}
+    const td=getDays(nw);
+    if(td[nd]?.rest){nd=0;nw=Math.min(nw+1,12);}
+    return {week:nw,dayIdx:nd};
+  }
+
+  function markComplete(){
+    const np=nextPos();
+    const newAll={...allData,[dayKey]:{...dayData,completed:true,completedAt:new Date().toISOString()},__pos:np};
+    setAllData(newAll);lsSave(newAll);setSaveStatus("saved");
+    showToast("✓ Saved! Next session ready");
+    setTimeout(()=>{setCWeek(np.week);setCDayIdx(np.dayIdx);},1200);
+  }
+
+  function showToast(msg){setToast(msg);setTimeout(()=>setToast(null),2800);}
+
+  function getProgress(){
+    if(!allData)return{done:0,total:72};
+    let done=0;
+    for(let w=1;w<=12;w++)for(let d=0;d<6;d++)if(allData[`w${w}-d${d}`]?.completed)done++;
+    return{done,total:72};
+  }
+
+  const {done:sessCompleted,total:sessTotal}=getProgress();
+  const progressPct=Math.round((sessCompleted/sessTotal)*100);
+  const cPhase=phOf(cWeek);
+  const note=wNote(cWeek);
+
+  if(!allData) return (
+    <div style={{background:C.bg,minHeight:"100dvh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Mono',monospace",color:C.muted,fontSize:13}}>
+      Loading…
+    </div>
+  );
+
+  return (
+    <div style={{background:C.bg,minHeight:"100dvh",fontFamily:"'DM Sans',sans-serif",color:C.text}}>
+      {toast && <div className="toast">{toast}</div>}
+
+      {/* TOP NAV */}
+      <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(10,10,15,.95)",backdropFilter:"blur(12px)",borderBottom:`1px solid ${C.border}`,paddingTop:"env(safe-area-inset-top)"}}>
+        <div style={{maxWidth:640,margin:"0 auto",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,lineHeight:1,letterSpacing:".04em"}}>
+              WORKOUT <span style={{color:C.accent}}>PROGRAMME</span>
+            </div>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,letterSpacing:".14em",textTransform:"uppercase",marginTop:1}}>
+              Wk {cWeek} · {PHASES[cPhase-1].title} · {sessCompleted}/{sessTotal} sessions
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:saveStatus==="saved"?C.accent:saveStatus==="saving"?"#fb923c":C.muted,display:"flex",alignItems:"center",gap:5}}>
+              <div style={{width:5,height:5,borderRadius:"50%",background:saveStatus==="saved"?C.accent:saveStatus==="saving"?"#fb923c":C.muted,transition:"background .3s"}}/>
+              {saveStatus==="saving"?"Saving":saveStatus==="saved"?"Saved":""}
+            </div>
+            <button onClick={()=>setView(v=>v==="workout"?"progress":"workout")}
+              style={{background:view==="progress"?C.accent:C.card,border:`1px solid ${view==="progress"?C.accent:C.border}`,borderRadius:8,padding:"6px 12px",color:view==="progress"?"#0a0a0f":C.muted,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:".08em",textTransform:"uppercase"}}>
+              {view==="progress"?"← Back":"Progress"}
+            </button>
+          </div>
+        </div>
+        {/* Overall progress bar */}
+        <div style={{height:2,background:C.border}}>
+          <div style={{height:"100%",width:`${progressPct}%`,background:C.accent,transition:"width .5s ease"}}/>
+        </div>
+      </div>
+
+      <div style={{maxWidth:640,margin:"0 auto",padding:"16px 16px calc(env(safe-area-inset-bottom) + 24px)"}}>
+
+        {view==="progress" ? (
+          <ProgressView allData={allData} onNav={(w,d)=>{setCWeek(w);setCDayIdx(d);setView("workout");}}/>
+        ) : (
+          <>
+            {/* PHASE SELECTOR */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
+              {PHASES.map(ph=>(
+                <div key={ph.id} onClick={()=>{setCWeek(ph.id===1?1:ph.id===2?5:9);setCDayIdx(0);}}
+                  style={{background:cPhase===ph.id?"rgba(232,255,71,.05)":C.card,border:`1px solid ${cPhase===ph.id?C.accent:C.border}`,borderRadius:10,padding:"10px 10px",cursor:"pointer",transition:"all .18s"}}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".12em"}}>{ph.label}</div>
+                  <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:cPhase===ph.id?C.accent:C.text,letterSpacing:".04em"}}>{ph.title}</div>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.accent}}>{ph.wks}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* WEEK NAV */}
+            <div style={{display:"flex",gap:2,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:3,marginBottom:10,overflowX:"auto"}}>
+              {[1,2,3,4,5,6,7,8,9,10,11,12].filter(w=>phOf(w)===cPhase).map(w=>{
+                const wDone=[0,1,2,3,4,5].filter(d=>allData[`w${w}-d${d}`]?.completed).length;
+                const isA=w===cWeek;
+                return (
+                  <button key={w} onClick={()=>{setCWeek(w);setCDayIdx(0);}}
+                    style={{flex:1,minWidth:48,padding:"7px 3px",background:isA?C.accent:"transparent",border:"none",borderRadius:7,color:isA?"#0a0a0f":wDone===6?"#6aff47":C.muted,fontFamily:"'DM Mono',monospace",fontSize:11,cursor:"pointer",fontWeight:isA?700:400,position:"relative",whiteSpace:"nowrap"}}>
+                    Wk{w}
+                    {wDone>0&&!isA&&<span style={{position:"absolute",top:4,right:4,width:4,height:4,borderRadius:"50%",background:wDone===6?"#6aff47":"#fb923c",display:"block"}}/>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* WEEK NOTE */}
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.accent}`,borderRadius:"0 8px 8px 0",padding:"9px 13px",marginBottom:12,fontFamily:"'DM Mono',monospace",fontSize:11,color:C.muted,lineHeight:1.7}}>
+              <span style={{color:C.accent,fontWeight:700}}>{note.h}</span> · {note.rpe}
+              <div style={{color:C.blue,marginTop:3,fontSize:10}}>🔵 {note.pu}</div>
+            </div>
+
+            {/* DAY TABS */}
+            <div style={{display:"flex",gap:5,marginBottom:14,overflowX:"auto",paddingBottom:2}}>
+              {days.map((d,i)=>{
+                const dk=`w${cWeek}-d${i}`;
+                const isDone=allData[dk]?.completed;
+                const isA=i===cDayIdx;
+                const ts=TAG_STYLES[d.tag];
+                return (
+                  <button key={i} onClick={()=>setCDayIdx(i)}
+                    style={{flexShrink:0,padding:"7px 13px",background:isA?ts.color:"transparent",border:`1px solid ${isA?ts.color:isDone?"rgba(106,255,71,.25)":C.border}`,borderRadius:100,color:isA?"#0a0a0f":isDone?"#6aff47":C.muted,fontFamily:"'DM Mono',monospace",fontSize:10,letterSpacing:".07em",textTransform:"uppercase",cursor:"pointer",fontWeight:isA?700:400,display:"flex",alignItems:"center",gap:4}}>
+                    {isDone&&!isA&&<span>✓</span>}
+                    {d.num}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* WORKOUT CARD */}
+            {day && (
+              <DayCard key={dayKey} day={day} dayData={dayData}
+                onToggleEx={toggleEx} onNote={setNote} onRpe={setRpe} onDur={setDur}
+                onComplete={markComplete}/>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── DAY CARD ─────────────────────────────────────────────────────────────────
+function DayCard({day,dayData,onToggleEx,onNote,onRpe,onDur,onComplete}){
+  const done=dayData.done||{};
+  const ts=TAG_STYLES[day.tag];
+  const allExIds=day.rest?[]:day.secs.flatMap(s=>s.exs||[]).map(e=>e.id);
+  const checkedCount=allExIds.filter(id=>done[id]).length;
+  const allChecked=allExIds.length>0&&checkedCount===allExIds.length;
+
+  if(day.rest) return (
+    <div className="fade-in" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"28px 20px",textAlign:"center"}}>
+      <div style={{fontSize:44,marginBottom:10}}>🧘</div>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:26,color:C.muted,letterSpacing:".08em",marginBottom:6}}>REST DAY</div>
+      <div style={{fontSize:13,color:C.muted,lineHeight:1.7}}>Full rest or 20–30 min walk / Pilates / mobility.<br/>Sleep 8h+. Recovery is where adaptation happens.</div>
+    </div>
+  );
+
+  return (
+    <div className="fade-in" style={{background:C.card,border:`1px solid ${dayData.completed?"rgba(106,255,71,.3)":C.border}`,borderRadius:16,overflow:"hidden"}}>
+
+      {/* Header */}
+      <div style={{padding:"14px 16px 12px",borderBottom:`1px solid ${C.border}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:36,lineHeight:1,color:C.muted,minWidth:48}}>{day.num}</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".16em",marginBottom:1}}>{day.name}</div>
+            <div style={{fontSize:16,fontWeight:600,letterSpacing:"-.02em"}}>{day.title}</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+            <span style={{background:ts.bg,color:ts.color,fontFamily:"'DM Mono',monospace",fontSize:9,textTransform:"uppercase",padding:"2px 9px",borderRadius:100,fontWeight:600}}>{day.tag}</span>
+            <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>{day.dur}</span>
+          </div>
+        </div>
+        {/* Intensity */}
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,width:52}}>Intensity</div>
+          <div style={{flex:1,height:2,background:"#1e1e2e",borderRadius:100,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${day.int}%`,background:day.ic,borderRadius:100}}/>
+          </div>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:day.ic,width:28,textAlign:"right"}}>{day.int}%</div>
+        </div>
+        {dayData.completed&&(
+          <div style={{marginTop:8,background:"rgba(106,255,71,.08)",border:"1px solid rgba(106,255,71,.2)",borderRadius:7,padding:"5px 11px",fontFamily:"'DM Mono',monospace",fontSize:10,color:"#6aff47"}}>
+            ✓ Completed {dayData.completedAt?new Date(dayData.completedAt).toLocaleDateString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):""}
+          </div>
+        )}
+      </div>
+
+      {/* Exercises */}
+      <div style={{padding:"0 16px 16px"}}>
+        {day.secs.map((sec,si)=>(
+          <div key={si}>
+            {sec.fin?(
+              <div style={{background:"linear-gradient(135deg,rgba(232,255,71,.06),rgba(232,255,71,.02))",border:"1px solid rgba(232,255,71,.2)",borderRadius:10,padding:"10px 12px",marginTop:12}}>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",color:C.accent,marginBottom:7}}>{sec.lbl}</div>
+                {sec.cs.map((c,ci)=>(
+                  <div key={ci} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:ci<sec.cs.length-1?"1px solid rgba(232,255,71,.08)":"none",fontSize:12}}>
+                    <span style={{color:C.text}}>{c.n}</span>
+                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.accent}}>{c.v}</span>
+                  </div>
+                ))}
+              </div>
+            ):(
+              <>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",color:C.muted,margin:"14px 0 6px"}}>{sec.lbl}</div>
+                <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                  {sec.exs.map(ex=>{
+                    const isDone=done[ex.id];
+                    return (
+                      <div key={ex.id} onClick={()=>onToggleEx(ex.id)}
+                        style={{display:"flex",alignItems:"center",gap:9,padding:"10px 11px",background:isDone?"rgba(232,255,71,.05)":C.surface,borderRadius:9,border:`1px solid ${isDone?"rgba(232,255,71,.2)":"transparent"}`,cursor:"pointer",transition:"all .15s",WebkitUserSelect:"none",userSelect:"none"}}>
+                        <div style={{width:20,height:20,borderRadius:6,border:`2px solid ${isDone?C.accent:C.border}`,background:isDone?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>
+                          {isDone&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        </div>
+                        <div style={{width:24,height:24,borderRadius:7,background:"rgba(255,255,255,.04)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>{ex.ic}</div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,color:isDone?C.muted:C.text,textDecoration:isDone?"line-through":"none",transition:"color .15s"}}>{ex.n}</div>
+                          {ex.note&&<div style={{fontSize:11,color:C.muted,marginTop:1}}>{ex.note}</div>}
+                          {ex.banded&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.blue,marginTop:2}}>🔵 {day.puBand}</div>}
+                        </div>
+                        <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:isDone?C.accent:C.muted,flexShrink:0}}>{ex.s}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+
+        {/* Progress mini bar */}
+        <div style={{marginTop:14,display:"flex",alignItems:"center",gap:8}}>
+          <div style={{flex:1,height:2,background:C.border,borderRadius:100,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${allExIds.length?checkedCount/allExIds.length*100:0}%`,background:C.accent,borderRadius:100,transition:"width .3s"}}/>
+          </div>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,whiteSpace:"nowrap"}}>{checkedCount}/{allExIds.length} done</div>
+        </div>
+
+        {/* Session log */}
+        <div style={{marginTop:12,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 13px"}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".14em",marginBottom:9}}>Session Log</div>
+          <div style={{display:"flex",gap:8,marginBottom:9}}>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4}}>Duration (min)</div>
+              <input type="number" min={1} max={90} placeholder="55" value={dayData.duration||""} onChange={e=>onDur(e.target.value)}
+                style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:7,padding:"7px 9px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:13,outline:"none"}}/>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4}}>Actual RPE (1–10)</div>
+              <input type="number" min={1} max={10} placeholder="8" value={dayData.rpe||""} onChange={e=>onRpe(e.target.value)}
+                style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:7,padding:"7px 9px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:13,outline:"none"}}/>
+            </div>
+          </div>
+          <textarea placeholder="Notes · PRs · how it felt…" value={dayData.note||""} onChange={e=>onNote(e.target.value)} rows={3}
+            style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:7,padding:"8px 9px",color:C.text,fontSize:13,outline:"none",resize:"vertical",lineHeight:1.5}}/>
+        </div>
+
+        {/* Complete button */}
+        {!dayData.completed?(
+          <button onClick={onComplete}
+            style={{marginTop:12,width:"100%",padding:"15px",background:allChecked?C.accent:"rgba(232,255,71,.1)",border:`1px solid ${allChecked?C.accent:"rgba(232,255,71,.3)"}`,borderRadius:10,color:allChecked?"#0a0a0f":C.accent,fontFamily:"'Bebas Neue',sans-serif",fontSize:17,letterSpacing:".1em",cursor:"pointer",transition:"all .2s"}}>
+            {allChecked?"✓ COMPLETE & NEXT SESSION →":"MARK COMPLETE & ADVANCE →"}
+          </button>
+        ):(
+          <div style={{marginTop:12,textAlign:"center",fontFamily:"'DM Mono',monospace",fontSize:11,color:"#6aff47",padding:"10px",background:"rgba(106,255,71,.05)",border:"1px solid rgba(106,255,71,.15)",borderRadius:10}}>
+            ✓ Session complete · Advanced to next training day
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── PROGRESS VIEW ────────────────────────────────────────────────────────────
+function ProgressView({allData,onNav}){
+  const weeks=Array.from({length:12},(_,i)=>i+1);
+  const days=["MON","TUE","WED","THU","FRI","SAT"];
+  let totalDone=0;
+  for(let w=1;w<=12;w++)for(let d=0;d<6;d++)if(allData[`w${w}-d${d}`]?.completed)totalDone++;
+  const pct=Math.round((totalDone/72)*100);
+
+  return (
+    <div className="fade-in">
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:36,letterSpacing:".04em",marginBottom:4}}>
+        PROGRESS <span style={{color:C.accent}}>MAP</span>
+      </div>
+      <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.muted,marginBottom:16}}>
+        {totalDone}/72 sessions · {pct}% complete
+      </div>
+
+      {/* Big progress bar */}
+      <div style={{height:6,background:C.border,borderRadius:100,overflow:"hidden",marginBottom:24}}>
+        <div style={{height:"100%",width:`${pct}%`,background:C.accent,borderRadius:100,transition:"width .5s"}}/>
+      </div>
+
+      {/* Grid */}
+      {PHASES.map(ph=>{
+        const phWeeks=weeks.filter(w=>phOf(w)===ph.id);
+        const phDone=phWeeks.reduce((a,w)=>{
+          for(let d=0;d<6;d++)if(allData[`w${w}-d${d}`]?.completed)a++;
+          return a;
+        },0);
+        return (
+          <div key={ph.id} style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
+              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,letterSpacing:".04em",color:C.text}}>
+                {ph.title} <span style={{color:C.muted,fontSize:14}}>{ph.wks}</span>
+              </div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.accent}}>{phDone}/{phWeeks.length*6}</div>
+            </div>
+            {phWeeks.map(w=>{
+              const wData=days.map((_,di)=>allData[`w${w}-d${di}`]);
+              const wDone=wData.filter(d=>d?.completed).length;
+              return (
+                <div key={w} style={{marginBottom:6}}>
+                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4,letterSpacing:".1em"}}>WEEK {w}</div>
+                  <div style={{display:"flex",gap:4}}>
+                    {days.map((dayNum,di)=>{
+                      const dd=allData[`w${w}-d${di}`];
+                      const isDone=dd?.completed;
+                      const dayInfo=getDays(w)[di];
+                      const ts=TAG_STYLES[dayInfo.tag];
+                      return (
+                        <div key={di} onClick={()=>onNav(w,di)}
+                          style={{flex:1,aspectRatio:"1",borderRadius:7,background:isDone?ts.color:"rgba(255,255,255,.03)",border:`1px solid ${isDone?ts.color:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",flexDirection:"column",gap:1}}>
+                          <div style={{fontFamily:"'DM Mono',monospace",fontSize:7,color:isDone?"#0a0a0f":C.muted,fontWeight:700}}>{dayNum}</div>
+                          {isDone&&<div style={{fontSize:8,color:"#0a0a0f"}}>✓</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      {/* Stats */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:8}}>
+        {[
+          {label:"Completed",val:totalDone},
+          {label:"Remaining",val:72-totalDone},
+          {label:"Completion",val:`${pct}%`},
+        ].map(s=>(
+          <div key={s.label} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px",textAlign:"center"}}>
+            <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:26,color:C.text,lineHeight:1}}>{s.val}</div>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em",marginTop:3}}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── MOUNT ────────────────────────────────────────────────────────────────────
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+
+<script>
+// Service Worker registration
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
