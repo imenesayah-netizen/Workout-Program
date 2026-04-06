@@ -53,6 +53,26 @@
     animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);
   }
   @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  /* Offline banner */
+  .offline-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#fb923c;color:#0a0a0f;
+    text-align:center;padding:8px;
+    font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+    z-index:9998;letter-spacing:.06em;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom));
+  }
+  .online-flash{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#6aff47;color:#0a0a0f;
+    text-align:center;padding:8px;
+    font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+    z-index:9998;letter-spacing:.06em;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom));
+    animation:slideUp .3s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -118,60 +138,169 @@ function wNote(w){return PHASES[phOf(w)-1].weeks[w];}
 
 function getDays(w) {
   const p=phOf(w), note=wNote(w), puBand=note.pu;
-  const sqS=p===1?"3×5":p===2?"4×4":"4×3";
-  const rdlS=p===1?"3×8":p===2?"4×8":"4×6";
-  const rowS=p===1?"3×6":p===2?"4×6":"4×5";
-  const bpS=p===1?"3×6":p===2?"4×5":"4×4";
-  const dlS=p===1?"4×3":p===2?"4×3":"5×2";
-  const fsS=p===1?"3×5":p===2?"4×4":"4×3";
-  const bssS=p===1?"3×8":p===2?"3×10":"4×8";
-  const htS=p===1?"3×10":p===2?"4×10":"4×12";
-  const ohpS=p===1?"3×5":p===2?"4×5":"4×4";
-  const puS=p===1?"3×6":p===2?"4×6":"4×6";
-  const ppS=p===1?"3×5":p===2?"4×5":"4×4";
-  const tdlS=p===1?"4×5":p===2?"4×5":"4×4";
-  const emom=p===1?"16 min":p===2?"20 min":"24 min";
-  const ftR=p===1?"3 rounds":p===2?"4 rounds":"5 rounds";
-  const intv=p===1?"4×2 min hard":p===2?"5×2 min hard":"6×90s hard";
-  const amrp=p===1?"8 min":p===2?"10 min":"12 min";
-  const finR=p===1?"2 rounds":"3 rounds";
+
+  // ── Progressive set/rep schemes ───────────────────────────────────────────
+  // Strength compounds
+  const sqS   = p===1?"3x5" :p===2?"4x4":"4x3";
+  const dlS   = p===1?"4x3" :p===2?"4x3":"5x2";
+  const rdlS  = p===1?"3x10":p===2?"4x10":"4x8";
+  const htS   = p===1?"4x10":p===2?"4x12":"4x15";  // hip thrust — higher reps for glutes
+  const bssS  = p===1?"3x8" :p===2?"3x10":"4x10";
+  const suS   = p===1?"3x10":p===2?"3x12":"4x12";  // step-up
+  const srdlS = p===1?"3x10":p===2?"3x12":"4x10";  // single-leg RDL
+  const ckbS  = p===1?"3x12":p===2?"3x15":"4x15";  // cable kickback
+  const abS   = p===1?"3x15":p===2?"4x15":"4x20";  // abduction
+  // Upper — pull width & lateral delt
+  const puS   = p===1?"3x6" :p===2?"4x6":"4x6";    // banded pull-ups
+  const wgpuS = p===1?"3x8" :p===2?"4x8":"4x10";   // wide-grip lat pulldown
+  const csrS  = p===1?"3x12":p===2?"4x12":"4x10";  // chest-supported row
+  const mrS   = p===1?"3x10":p===2?"3x12":"4x10";  // meadows / single-arm row
+  const lrS   = p===1?"3x15":p===2?"4x15":"4x20";  // lateral raise
+  const clrS  = p===1?"3x15":p===2?"4x15":"4x20";  // cable lateral raise
+  const rdS   = p===1?"3x15":p===2?"4x15":"4x20";  // rear delt fly
+  const fpS   = p===1?"3x15":p===2?"4x15":"4x20";  // face pull
+  const ohpS  = p===1?"3x5" :p===2?"4x5":"4x4";
+  const ppS   = p===1?"3x5" :p===2?"4x5":"4x4";
+  const bpS   = p===1?"3x6" :p===2?"4x5":"4x4";
+  const tdlS  = p===1?"4x5" :p===2?"4x5":"4x4";
+  // Conditioning
+  const emom  = p===1?"16 min":p===2?"20 min":"24 min";
+  const ftR   = p===1?"3 rounds":p===2?"4 rounds":"5 rounds";
+  const intv  = p===1?"4x2 min hard":p===2?"5x2 min hard":"6x90s hard";
+  const amrp  = p===1?"8 min":p===2?"10 min":"12 min";
+  const finR  = p===1?"2 rounds":"3 rounds";
 
   return [
+    // ── MON: Hybrid Strength — Lower compound + Upper back width + Lat delts ──
     {num:"MON",name:"Monday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:85,ic:"#e8ff47",secs:[
-      {lbl:"Warm-Up — 5 min",exs:[{id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build"},{id:"mon-wu-2",ic:"🔄",n:"Hip circles + T-spine rotations",s:"2×8 each",note:""}]},
-      {lbl:"Strength Superset A — 20 min",exs:[{id:"mon-a1",ic:"🏋️",n:"Back Squat",s:sqS,note:"Heavy. Superset with row."},{id:"mon-a2",ic:"🔙",n:"Barbell Bent-Over Row",s:rowS,note:"Rest 90s between supersets"}]},
-      {lbl:"Strength Superset B — 15 min",exs:[{id:"mon-b1",ic:"💪",n:"Bench Press",s:bpS,note:"Superset with RDL"},{id:"mon-b2",ic:"🏋️",n:"Romanian Deadlift",s:rdlS,note:"3s controlled eccentric"}]},
-      {lbl:`Hybrid Finisher — ${finR}`,fin:true,cs:[{n:"KB Swings",v:"15 reps"},{n:"Box Jumps",v:"8 reps"},{n:"Push-Up to DB Row",v:"10 reps"},{n:"Rest",v:"60s"}]},
+      {lbl:"Warm-Up — 5 min",exs:[
+        {id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build"},
+        {id:"mon-wu-2",ic:"🔄",n:"Banded pull-aparts + hip circles",s:"2x10 each",note:""},
+      ]},
+      {lbl:"Strength — 20 min",exs:[
+        {id:"mon-a1",ic:"🏋️",n:"Back Squat",s:sqS,note:"Heavy compound — anchor of the session"},
+        {id:"mon-a2",ic:"🔙",n:"Wide-Grip Lat Pulldown",s:wgpuS,note:"Elbows flared wide · pull to upper chest · builds back width"},
+      ]},
+      {lbl:"Hypertrophy — 18 min",exs:[
+        {id:"mon-b1",ic:"🍑",n:"Barbell Hip Thrust",s:htS,note:"Full extension · squeeze hard at top · glute emphasis"},
+        {id:"mon-b2",ic:"💪",n:"DB Lateral Raise",s:lrS,note:"Lead with elbow · slight forward tilt · control eccentric"},
+        {id:"mon-b3",ic:"🔙",n:"Chest-Supported DB Row",s:csrS,note:"Wide elbow angle · squeeze rear delts · upper back width"},
+      ]},
+      {lbl:`Finisher — ${finR}`,fin:true,cs:[
+        {n:"KB Swings (glute drive)",v:"15 reps"},
+        {n:"Cable lateral raise",v:"12/side"},
+        {n:"Banded glute bridge",v:"20 reps"},
+        {n:"Rest",v:"60s"},
+      ]},
     ]},
-    {num:"TUE",name:"Tuesday",title:"Lower Body Power",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
-      {lbl:"Warm-Up — 5 min",exs:[{id:"tue-wu-1",ic:"🚴",n:"Assault bike easy",s:"3 min",note:""},{id:"tue-wu-2",ic:"⚡",n:"BW Jump squats + leg swings",s:"2×10",note:"CNS activation"}]},
-      {lbl:"Main Power — 22 min",exs:[{id:"tue-a1",ic:"🏋️",n:"Conventional Deadlift",s:dlS,note:"90%+ 1RM · explosive concentric"},{id:"tue-a2",ic:"🦵",n:"Front Squat",s:fsS,note:"Speed out of hole"}]},
-      {lbl:"Accessory — 18 min",exs:[{id:"tue-b1",ic:"🦵",n:"Bulgarian Split Squat",s:bssS,note:"Loaded · slow eccentric"},{id:"tue-b2",ic:"🍑",n:"Barbell Hip Thrust",s:htS,note:"Full glute extension at top"}]},
-      {lbl:"Finisher — 2 rounds",fin:true,cs:[{n:"Wall sit",v:"30s"},{n:"Lateral band walks",v:"15 steps each"},{n:"Single-leg RDL",v:"8/side"},{n:"Rest",v:"60s"}]},
+
+    // ── TUE: Lower Body — Glute & posterior chain focus ──────────────────────
+    {num:"TUE",name:"Tuesday",title:"Lower Body — Glutes",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[
+        {id:"tue-wu-1",ic:"🍑",n:"Banded clamshells + glute bridges",s:"2x15 each",note:"Activate glutes before loading"},
+        {id:"tue-wu-2",ic:"⚡",n:"Hip flexor stretch + leg swings",s:"90s/side",note:""},
+      ]},
+      {lbl:"Main Power — 20 min",exs:[
+        {id:"tue-a1",ic:"🏋️",n:"Conventional Deadlift",s:dlS,note:"Drive hips through · squeeze glutes at lockout"},
+        {id:"tue-a2",ic:"🦵",n:"Bulgarian Split Squat",s:bssS,note:"Rear foot elevated · torso upright · deep stretch"},
+      ]},
+      {lbl:"Glute Accessory — 20 min",exs:[
+        {id:"tue-b1",ic:"🍑",n:"Single-Leg Hip Thrust",s:htS,note:"Full ROM · 2s pause at top · isolates each glute"},
+        {id:"tue-b2",ic:"🦵",n:"Romanian Deadlift",s:rdlS,note:"Hinge deep · feel hamstring tension · no lower back rounding"},
+        {id:"tue-b3",ic:"🍑",n:"Cable Kickback",s:ckbS,note:"Slight forward lean · squeeze glute at full extension"},
+      ]},
+      {lbl:"Finisher — 2 rounds",fin:true,cs:[
+        {n:"Lateral band walks",v:"20 steps each way"},
+        {n:"Frog pumps",v:"25 reps"},
+        {n:"Sumo squat pulse",v:"20 reps"},
+        {n:"Rest",v:"45s"},
+      ]},
     ]},
+
+    // ── WED: Conditioning — includes shoulder & glute work in circuits ────────
     {num:"WED",name:"Wednesday",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
-      {lbl:"Warm-Up — 5 min",exs:[{id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1×",note:""},{id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm swings"}]},
-      {lbl:`EMOM — ${emom}`,exs:[{id:"wed-a1",ic:"⏱️",n:"Min 1: Burpee box jump-over",s:"8 reps",note:""},{id:"wed-a2",ic:"⏱️",n:"Min 2: Row / ski erg",s:"200m",note:""},{id:"wed-a3",ic:"⏱️",n:"Min 3: DB Thrusters",s:"10 reps",note:"Moderate load"},{id:"wed-a4",ic:"⏱️",n:"Min 4: Active rest",s:"—",note:"Walk + breathe"}]},
-      {lbl:"For Time — 20 min cap",exs:[{id:"wed-b1",ic:"🏃",n:`${ftR}: 400m run + 12 wall balls`,s:"For time",note:"Pace conservatively on round 1"}]},
-      {lbl:"Cool-Down — 5 min",fin:true,cs:[{n:"Hip flexor hold",v:"60s/side"},{n:"Diaphragmatic breathing",v:"2 min"}]},
+      {lbl:"Warm-Up — 5 min",exs:[
+        {id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1x",note:""},
+        {id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm circles"},
+      ]},
+      {lbl:`EMOM — ${emom}`,exs:[
+        {id:"wed-a1",ic:"⏱️",n:"Min 1: Burpee box jump-over",s:"8 reps",note:"Hip extension focus on jump"},
+        {id:"wed-a2",ic:"⏱️",n:"Min 2: DB Lateral raise + press",s:"10 reps",note:"Lateral raise to overhead — lateral delt hit"},
+        {id:"wed-a3",ic:"⏱️",n:"Min 3: KB Swing",s:"15 reps",note:"Posterior chain · explosive hip hinge"},
+        {id:"wed-a4",ic:"⏱️",n:"Min 4: Active rest",s:"—",note:"Walk + breathe"},
+      ]},
+      {lbl:"For Time — 20 min cap",exs:[
+        {id:"wed-b1",ic:"🏃",n:`${ftR}: 400m run + 12 wall balls`,s:"For time",note:"Pace conservatively on round 1"},
+      ]},
+      {lbl:"Cool-Down — 5 min",fin:true,cs:[
+        {n:"Hip flexor hold",v:"60s/side"},
+        {n:"Pigeon pose",v:"60s/side"},
+        {n:"Diaphragmatic breathing",v:"2 min"},
+      ]},
     ]},
-    {num:"THU",name:"Thursday",title:"Upper Body Strength",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
-      {lbl:"Warm-Up — 5 min",exs:[{id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"2×15",note:""},{id:"thu-wu-2",ic:"🤸",n:"Scap push-ups + dead hangs",s:"2×8",note:"Prime the lats"}]},
-      {lbl:"Press + Pull Superset A — 20 min",exs:[{id:"thu-a1",ic:"💪",n:"Overhead Press (Barbell)",s:ohpS,note:"Superset with banded pull-ups"},{id:"thu-a2",ic:"🔵",n:"Banded Pull-Ups",s:puS,note:"",banded:true}]},
-      {lbl:"Press + Pull Superset B — 15 min",exs:[{id:"thu-b1",ic:"💪",n:"Incline DB Press",s:"3×10",note:"Superset with cable row"},{id:"thu-b2",ic:"🔙",n:"Seated Cable Row",s:"3×12",note:"3s eccentric · drive elbows back"}]},
-      {lbl:"Shoulder Health + Arms — 10 min",fin:true,cs:[{n:"Face pull w/ ext. rotation",v:"3×15"},{n:"EZ-bar curl",v:"2×12"},{n:"Farmer carries",v:"2×20m"}]},
+
+    // ── THU: Upper Body — Lateral delt + upper back width priority ────────────
+    {num:"THU",name:"Thursday",title:"Upper Body — Delts & Back Width",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
+      {lbl:"Warm-Up — 5 min",exs:[
+        {id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"3x15",note:"Rear delt primer"},
+        {id:"thu-wu-2",ic:"🤸",n:"Scap pull-ups + face pulls",s:"2x10",note:"Warm up the entire upper back"},
+      ]},
+      {lbl:"Press + Pull Superset A — 18 min",exs:[
+        {id:"thu-a1",ic:"💪",n:"Overhead Press (Barbell)",s:ohpS,note:"Strict · builds shoulder base · superset with pull-ups"},
+        {id:"thu-a2",ic:"🔵",n:"Banded Pull-Ups",s:puS,note:"",banded:true},
+      ]},
+      {lbl:"Lateral Delt + Back Width — 20 min",exs:[
+        {id:"thu-b1",ic:"💪",n:"Cable Lateral Raise",s:clrS,note:"Single arm · constant tension · slow eccentric 3s"},
+        {id:"thu-b2",ic:"🔙",n:"Meadows Row (single-arm)",s:mrS,note:"Elbow high and wide · upper back + rear delt"},
+        {id:"thu-b3",ic:"🔙",n:"Rear Delt Fly (DB or cable)",s:rdS,note:"Slight bend in elbow · lead with elbow · horizontal pull"},
+      ]},
+      {lbl:"Shoulder Health — 10 min",fin:true,cs:[
+        {n:"Face pull w/ ext. rotation",v:"3x20"},
+        {n:"Upright row (cable)",v:"3x15"},
+        {n:"Band external rotation",v:"2x20/side"},
+      ]},
     ]},
+
+    // ── FRI: Hybrid Strength — Posterior chain + Shoulder width circuit ───────
     {num:"FRI",name:"Friday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:92,ic:"#e8ff47",secs:[
-      {lbl:"Warm-Up — 5 min",exs:[{id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR"},{id:"fri-wu-2",ic:"🔄",n:"Ankle + hip mobility",s:"1 min",note:""}]},
-      {lbl:"Complex A — Lower — 18 min",exs:[{id:"fri-a1",ic:"🏋️",n:"Trap Bar Deadlift",s:tdlS,note:"Explosive concentric"},{id:"fri-a2",ic:"⚡",n:"Broad Jumps (after each set)",s:"4×4",note:"Post-activation potentiation"}]},
-      {lbl:"Complex B — Upper — 15 min",exs:[{id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout"},{id:"fri-b2",ic:"🔵",n:"Banded Pull-Ups (chest-to-bar)",s:puS,note:"",banded:true}]},
-      {lbl:`AMRAP — ${amrp}`,fin:true,cs:[{n:"DB Snatch (alternating)",v:"8 reps"},{n:"Bar-facing burpees",v:"5 reps"},{n:"Goblet squat",v:"10 reps"}]},
+      {lbl:"Warm-Up — 5 min",exs:[
+        {id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR"},
+        {id:"fri-wu-2",ic:"🔄",n:"Banded abductions + shoulder CARs",s:"2x12",note:"Prime glutes and shoulders"},
+      ]},
+      {lbl:"Complex A — Lower — 18 min",exs:[
+        {id:"fri-a1",ic:"🏋️",n:"Trap Bar Deadlift",s:tdlS,note:"Explosive concentric · strong glute lockout"},
+        {id:"fri-a2",ic:"🦵",n:"Step-Up (weighted)",s:suS,note:"Drive through heel · single-leg glute activation"},
+      ]},
+      {lbl:"Complex B — Upper — 15 min",exs:[
+        {id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout · overhead strength"},
+        {id:"fri-b2",ic:"🔵",n:"Banded Pull-Ups (wide grip aim)",s:puS,note:"",banded:true},
+      ]},
+      {lbl:`AMRAP — ${amrp}`,fin:true,cs:[
+        {n:"DB Lateral raise",v:"12 reps"},
+        {n:"Hip thrust (BW or banded)",v:"15 reps"},
+        {n:"Wide-grip inverted row",v:"10 reps"},
+        {n:"Bar-facing burpees",v:"5 reps"},
+      ]},
     ]},
+
+    // ── SAT: Conditioning + Endurance + Glute/Delt accessory finisher ─────────
     {num:"SAT",name:"Saturday",title:"Conditioning + Endurance",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
-      {lbl:"Aerobic Base — 18 min",exs:[{id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:"13 min",note:"65–70% MHR · nasal breathing"},{id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs"}]},
-      {lbl:`Lactate Intervals — ${intv}`,exs:[{id:"sat-a1",ic:"⚡",n:`${intv} / 90s easy`,s:"Assault bike or row",note:"90–95% MHR on work"}]},
-      {lbl:"Skill + Core — 12 min",exs:[{id:"sat-b1",ic:"🤸",n:"Wall walks or HS hold",s:"4×30s",note:""},{id:"sat-b2",ic:"🔵",n:"Scapular pull-ups (dead hang shrug)",s:"3×10",note:"No band needed · builds unassisted strength"},{id:"sat-b3",ic:"🤸",n:"L-sit hold",s:"3×15s",note:"Parallel bars or floor"}]},
-      {lbl:"Cool-Down — 5 min",fin:true,cs:[{n:"Foam roll legs",v:"2 min"},{n:"Pigeon pose",v:"90s/side"}]},
+      {lbl:"Aerobic Base — 18 min",exs:[
+        {id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:"13 min",note:"65–70% MHR · nasal breathing"},
+        {id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs · upper back warm"},
+      ]},
+      {lbl:`Lactate Intervals — ${intv}`,exs:[
+        {id:"sat-a1",ic:"⚡",n:`${intv} / 90s easy`,s:"Assault bike or row",note:"90–95% MHR on work intervals"},
+      ]},
+      {lbl:"Skill + Shoulder & Glute Accessory — 12 min",exs:[
+        {id:"sat-b1",ic:"🔵",n:"Scapular pull-ups (dead hang shrug)",s:"3x10",note:"No band · builds unassisted pull-up strength"},
+        {id:"sat-b2",ic:"💪",n:"Single-arm cable lateral raise",s:clrS,note:"Constant tension · rear cable for better line of pull"},
+        {id:"sat-b3",ic:"🍑",n:"Banded hip abduction (seated)",s:abS,note:"Slow + controlled · glute med burns"},
+      ]},
+      {lbl:"Cool-Down — 5 min",fin:true,cs:[
+        {n:"Foam roll glutes + IT band",v:"2 min"},
+        {n:"Pigeon pose",v:"90s/side"},
+      ]},
     ]},
     {num:"SUN",name:"Sunday",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
   ].map(d=>({...d,puBand}));
@@ -280,6 +409,7 @@ function App() {
   return (
     <div style={{background:C.bg,minHeight:"100dvh",fontFamily:"'DM Sans',sans-serif",color:C.text}}>
       {toast && <div className="toast">{toast}</div>}
+      <OfflineBar/>
 
       {/* TOP NAV */}
       <div style={{position:"sticky",top:0,zIndex:100,background:"rgba(10,10,15,.95)",backdropFilter:"blur(12px)",borderBottom:`1px solid ${C.border}`,paddingTop:"env(safe-area-inset-top)"}}>
@@ -640,15 +770,35 @@ function ProgressView({allData,onNav}){
   );
 }
 
+// ─── OFFLINE BAR ─────────────────────────────────────────────────────────────
+function OfflineBar(){
+  const [status,setStatus]=useState(navigator.onLine?"online":"offline");
+  const [showBack,setShowBack]=useState(false);
+  useEffect(()=>{
+    function goOffline(){setStatus("offline");setShowBack(false);}
+    function goOnline(){setStatus("online");setShowBack(true);setTimeout(()=>setShowBack(false),3000);}
+    window.addEventListener("offline",goOffline);
+    window.addEventListener("online",goOnline);
+    return()=>{window.removeEventListener("offline",goOffline);window.removeEventListener("online",goOnline);}
+  },[]);
+  if(status==="offline") return <div className="offline-bar">&#9889; No connection — app works offline, data saved locally</div>;
+  if(showBack) return <div className="online-flash">&#10003; Back online</div>;
+  return null;
+}
+
 // ─── MOUNT ────────────────────────────────────────────────────────────────────
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 
 <script>
-// Unregister any old broken service workers
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(r=>r.unregister());
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {scope:'./'})
+      .then(reg => {
+        // Check for updates every 60s
+        setInterval(() => reg.update(), 60000);
+      })
+      .catch(err => console.warn('SW failed:', err));
   });
 }
 </script>
