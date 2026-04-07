@@ -174,8 +174,8 @@ function getDays(w) {
     // ── MON: Hybrid Strength — Lower compound + Upper back width + Lat delts ──
     {num:"MON",name:"Monday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:85,ic:"#e8ff47",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
-        {id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build"},
-        {id:"mon-wu-2",ic:"🔄",n:"Banded pull-aparts + hip circles",s:"2x10 each",note:""},
+        {id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build",noWeight:true},
+        {id:"mon-wu-2",ic:"🔄",n:"Banded pull-aparts + hip circles",s:"2x10 each",note:"",noWeight:true},
       ]},
       {lbl:"Strength — 20 min",exs:[
         {id:"mon-a1",ic:"🏋️",n:"Back Squat",s:sqS,note:"Heavy compound — anchor of the session"},
@@ -197,8 +197,8 @@ function getDays(w) {
     // ── TUE: Lower Body — Glute & posterior chain focus ──────────────────────
     {num:"TUE",name:"Tuesday",title:"Lower Body — Glutes",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
-        {id:"tue-wu-1",ic:"🍑",n:"Banded clamshells + glute bridges",s:"2x15 each",note:"Activate glutes before loading"},
-        {id:"tue-wu-2",ic:"⚡",n:"Hip flexor stretch + leg swings",s:"90s/side",note:""},
+        {id:"tue-wu-1",ic:"🍑",n:"Banded clamshells + glute bridges",s:"2x15 each",note:"Activate glutes before loading",noWeight:true},
+        {id:"tue-wu-2",ic:"⚡",n:"Hip flexor stretch + leg swings",s:"90s/side",note:"",noWeight:true},
       ]},
       {lbl:"Main Power — 20 min",exs:[
         {id:"tue-a1",ic:"🏋️",n:"Conventional Deadlift",s:dlS,note:"Drive hips through · squeeze glutes at lockout"},
@@ -220,17 +220,17 @@ function getDays(w) {
     // ── WED: Conditioning — includes shoulder & glute work in circuits ────────
     {num:"WED",name:"Wednesday",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
-        {id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1x",note:""},
-        {id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm circles"},
+        {id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1x",note:"",noWeight:true},
+        {id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm circles",noWeight:true},
       ]},
       {lbl:`EMOM — ${emom}`,exs:[
-        {id:"wed-a1",ic:"⏱️",n:"Min 1: Burpee box jump-over",s:"8 reps",note:"Hip extension focus on jump"},
+        {id:"wed-a1",ic:"⏱️",n:"Min 1: Burpee box jump-over",s:"8 reps",note:"Hip extension focus on jump",noWeight:true},
         {id:"wed-a2",ic:"⏱️",n:"Min 2: DB Lateral raise + press",s:"10 reps",note:"Lateral raise to overhead — lateral delt hit"},
-        {id:"wed-a3",ic:"⏱️",n:"Min 3: KB Swing",s:"15 reps",note:"Posterior chain · explosive hip hinge"},
-        {id:"wed-a4",ic:"⏱️",n:"Min 4: Active rest",s:"—",note:"Walk + breathe"},
+        {id:"wed-a3",ic:"⏱️",n:"Min 3: KB Swing",s:"15 reps",note:"Posterior chain · explosive hip hinge",noWeight:true},
+        {id:"wed-a4",ic:"⏱️",n:"Min 4: Active rest",s:"—",note:"Walk + breathe",noWeight:true},
       ]},
       {lbl:"For Time — 20 min cap",exs:[
-        {id:"wed-b1",ic:"🏃",n:`${ftR}: 400m run + 12 wall balls`,s:"For time",note:"Pace conservatively on round 1"},
+        {id:"wed-b1",ic:"🏃",n:`${ftR}: 400m run + 12 wall balls`,s:"For time",note:"Pace conservatively on round 1",noWeight:true},
       ]},
       {lbl:"Cool-Down — 5 min",fin:true,cs:[
         {n:"Hip flexor hold",v:"60s/side"},
@@ -242,8 +242,8 @@ function getDays(w) {
     // ── THU: Upper Body — Lateral delt + upper back width priority ────────────
     {num:"THU",name:"Thursday",title:"Upper Body — Delts & Back Width",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
-        {id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"3x15",note:"Rear delt primer"},
-        {id:"thu-wu-2",ic:"🤸",n:"Scap pull-ups + face pulls",s:"2x10",note:"Warm up the entire upper back"},
+        {id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"3x15",note:"Rear delt primer",noWeight:true},
+        {id:"thu-wu-2",ic:"🤸",n:"Scap pull-ups + face pulls",s:"2x10",note:"Warm up the entire upper back",noWeight:true},
       ]},
       {lbl:"Press + Pull Superset A — 18 min",exs:[
         {id:"thu-a1",ic:"💪",n:"Overhead Press (Barbell)",s:ohpS,note:"Strict · builds shoulder base · superset with pull-ups"},
@@ -264,12 +264,12 @@ function getDays(w) {
     // ── FRI: Hybrid Strength — Posterior chain + Shoulder width circuit ───────
     {num:"FRI",name:"Friday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:92,ic:"#e8ff47",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
-        {id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR"},
-        {id:"fri-wu-2",ic:"🔄",n:"Banded abductions + shoulder CARs",s:"2x12",note:"Prime glutes and shoulders"},
+        {id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR",noWeight:true},
+        {id:"fri-wu-2",ic:"🔄",n:"Banded abductions + shoulder CARs",s:"2x12",note:"Prime glutes and shoulders",noWeight:true},
       ]},
       {lbl:"Complex A — Lower — 18 min",exs:[
         {id:"fri-a1",ic:"🏋️",n:"Trap Bar Deadlift",s:tdlS,note:"Explosive concentric · strong glute lockout"},
-        {id:"fri-a2",ic:"🦵",n:"Step-Up (weighted)",s:suS,note:"Drive through heel · single-leg glute activation"},
+        {id:"fri-a2",ic:"🦵",n:"Step-Up (weighted)",s:suS,note:"Drive through heel · single-leg glute activation",noWeight:true},
       ]},
       {lbl:"Complex B — Upper — 15 min",exs:[
         {id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout · overhead strength"},
@@ -286,16 +286,16 @@ function getDays(w) {
     // ── SAT: Conditioning + Endurance + Glute/Delt accessory finisher ─────────
     {num:"SAT",name:"Saturday",title:"Conditioning + Endurance",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
       {lbl:"Aerobic Base — 18 min",exs:[
-        {id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:"13 min",note:"65–70% MHR · nasal breathing"},
-        {id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs · upper back warm"},
+        {id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:"13 min",note:"65–70% MHR · nasal breathing",noWeight:true},
+        {id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs · upper back warm",noWeight:true},
       ]},
       {lbl:`Lactate Intervals — ${intv}`,exs:[
-        {id:"sat-a1",ic:"⚡",n:`${intv} / 90s easy`,s:"Assault bike or row",note:"90–95% MHR on work intervals"},
+        {id:"sat-a1",ic:"⚡",n:`${intv} / 90s easy`,s:"Assault bike or row",note:"90–95% MHR on work intervals",noWeight:true},
       ]},
       {lbl:"Skill + Shoulder & Glute Accessory — 12 min",exs:[
-        {id:"sat-b1",ic:"🔵",n:"Scapular pull-ups (dead hang shrug)",s:"3x10",note:"No band · builds unassisted pull-up strength"},
+        {id:"sat-b1",ic:"🔵",n:"Scapular pull-ups (dead hang shrug)",s:"3x10",note:"No band · builds unassisted pull-up strength",noWeight:true},
         {id:"sat-b2",ic:"💪",n:"Single-arm cable lateral raise",s:clrS,note:"Constant tension · rear cable for better line of pull"},
-        {id:"sat-b3",ic:"🍑",n:"Banded hip abduction (seated)",s:abS,note:"Slow + controlled · glute med burns"},
+        {id:"sat-b3",ic:"🍑",n:"Banded hip abduction (seated)",s:abS,note:"Slow + controlled · glute med burns",noWeight:true},
       ]},
       {lbl:"Cool-Down — 5 min",fin:true,cs:[
         {n:"Foam roll glutes + IT band",v:"2 min"},
@@ -354,6 +354,15 @@ function App() {
     exSets[exId]=arr;
     updateDayData({exSets});
   }
+  function updateFinData(secIdx,roundIdx){
+    const fins={...(dayData.fins||{})};
+    const key=`sec${secIdx}`;
+    const rounds=[...(fins[key]||[])];
+    rounds[roundIdx]=!rounds[roundIdx];
+    fins[key]=rounds;
+    updateDayData({fins});
+  }
+
   function toggleSetDone(exId,si){
     const exSets={...(dayData.exSets||{})};
     const arr=[...(exSets[exId]||[])];
@@ -361,14 +370,31 @@ function App() {
     exSets[exId]=arr;
     updateDayData({exSets});
   }
-  function getPrevDayData(){
-    for(let w=cWeek-1;w>=1;w--){
-      const pd=allData[`w${w}-d${cDayIdx}`];
-      if(pd&&pd.completed&&pd.exSets) return pd;
+  // Global history: for a given exId, scan ALL sessions newest-first for any saved sets
+  function getLastSetsForEx(exId, exName) {
+    for (let w = 12; w >= 1; w--) {
+      for (let d = 5; d >= 0; d--) {
+        if (w === cWeek && d === cDayIdx) continue;
+        const pd = allData[`w${w}-d${d}`];
+        if (!pd || !pd.exSets) continue;
+        // Direct id match
+        if (pd.exSets[exId] && pd.exSets[exId].some(s => s && s.weight)) {
+          return pd.exSets[exId];
+        }
+        // Name match: find same exercise name in that session's day structure
+        if (exName) {
+          const dayList = getDays(w);
+          if (!dayList[d] || dayList[d].rest) continue;
+          const exs = dayList[d].secs.flatMap(s => s.exs || []);
+          const match = exs.find(e => e.n === exName);
+          if (match && pd.exSets[match.id] && pd.exSets[match.id].some(s => s && s.weight)) {
+            return pd.exSets[match.id];
+          }
+        }
+      }
     }
     return null;
   }
-  const prevDayData=getPrevDayData();
 
   function nextPos(){
     let nd=cDayIdx+1,nw=cWeek;
@@ -500,7 +526,8 @@ function App() {
               <DayCard key={dayKey} day={day} dayData={dayData}
                 onToggleEx={toggleEx} onNote={setNote} onRpe={setRpe} onDur={setDur}
                 onComplete={markComplete} onSetData={setExData}
-                onToggleSetDone={toggleSetDone} prevDayData={prevDayData}/>
+                onToggleSetDone={toggleSetDone} getLastSetsForEx={getLastSetsForEx}
+                dayKey2={dayKey} onFinData={updateFinData}/>
             )}
           </>
         )}
@@ -510,12 +537,11 @@ function App() {
 }
 
 // ─── DAY CARD ─────────────────────────────────────────────────────────────────
-function DayCard({day,dayData,onToggleEx,onNote,onRpe,onDur,onComplete,onSetData,onToggleSetDone,prevDayData}){
+function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,onSetData,onToggleSetDone,getLastSetsForEx,onFinData}){
   const [expanded,setExpanded]=useState({});
   function onToggleExpand(id){setExpanded(e=>({...e,[id]:!e[id]}));}
   const done=dayData.done||{};
   const sets=dayData.exSets||{};
-  const prevSets=prevDayData?.exSets||{};
   const ts=TAG_STYLES[day.tag];
   const allExIds=day.rest?[]:day.secs.flatMap(s=>s.exs||[]).map(e=>e.id);
   const checkedCount=allExIds.filter(id=>done[id]).length;
@@ -565,15 +591,7 @@ function DayCard({day,dayData,onToggleEx,onNote,onRpe,onDur,onComplete,onSetData
         {day.secs.map((sec,si)=>(
           <div key={si}>
             {sec.fin?(
-              <div style={{background:"linear-gradient(135deg,rgba(232,255,71,.06),rgba(232,255,71,.02))",border:"1px solid rgba(232,255,71,.2)",borderRadius:10,padding:"10px 12px",marginTop:12}}>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",color:C.accent,marginBottom:7}}>{sec.lbl}</div>
-                {sec.cs.map((c,ci)=>(
-                  <div key={ci} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:ci<sec.cs.length-1?"1px solid rgba(232,255,71,.08)":"none",fontSize:12}}>
-                    <span style={{color:C.text}}>{c.n}</span>
-                    <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.accent}}>{c.v}</span>
-                  </div>
-                ))}
-              </div>
+              <FinisherBlock sec={sec} secIdx={si} dayKey={dayKey2} dayData={dayData} onFinData={onFinData}/>
             ):(
               <>
                 <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",color:C.muted,margin:"14px 0 6px"}}>{sec.lbl}</div>
@@ -581,10 +599,11 @@ function DayCard({day,dayData,onToggleEx,onNote,onRpe,onDur,onComplete,onSetData
                   {sec.exs.map(ex=>{
                     const isDone=done[ex.id];
                     const isExp=expanded[ex.id];
-                    const exSets=sets[ex.id]||[];
-                    const prevExSets=prevSets[ex.id]||[];
+                    const currentSets=sets[ex.id]||[];
+                    const lastSets=getLastSetsForEx(ex.id, ex.n)||[];
+                    const hasCurrentData=currentSets.some(s=>s&&(s.weight||s.reps));
                     const numSets=parseInt(ex.s)||3;
-                    const loggedSummary=exSets.filter(s=>s&&s.weight).map(s=>`${s.weight}kg×${s.reps||'?'}`).join(' · ');
+                    const loggedSummary=(hasCurrentData?currentSets:lastSets).filter(s=>s&&s.weight).map(s=>`${s.weight}kg×${s.reps||'?'}`).join(' · ');
                     return (
                       <div key={ex.id} style={{background:isDone?"rgba(232,255,71,.05)":C.surface,borderRadius:9,border:`1px solid ${isDone?"rgba(232,255,71,.2)":isExp?C.border:"transparent"}`,transition:"all .15s",overflow:"hidden"}}>
                         <div style={{display:"flex",alignItems:"center",gap:9,padding:"10px 11px",cursor:"pointer",WebkitUserSelect:"none",userSelect:"none"}}
@@ -607,32 +626,53 @@ function DayCard({day,dayData,onToggleEx,onNote,onRpe,onDur,onComplete,onSetData
                         </div>
                         {isExp&&(
                           <div style={{padding:"0 11px 12px",borderTop:`1px solid ${C.border}`}} onClick={e=>e.stopPropagation()}>
-                            <div style={{display:"grid",gridTemplateColumns:"22px 1fr 1fr 26px",gap:5,padding:"7px 0 4px",fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em"}}>
-                              <div>#</div><div>kg</div><div>Reps</div><div></div>
-                            </div>
-                            {Array.from({length:numSets},(_,si)=>{
-                              const sd=exSets[si]||{};
-                              const psd=prevExSets[si]||{};
-                              return (
-                                <div key={si} style={{display:"grid",gridTemplateColumns:"22px 1fr 1fr 26px",gap:5,marginBottom:5,alignItems:"center"}}>
-                                  <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:sd.done?C.accent:C.muted,textAlign:"center",fontWeight:700}}>{si+1}</div>
-                                  <input type="number" inputMode="decimal" placeholder={psd.weight?String(psd.weight):"kg"}
-                                    value={sd.weight||""} onChange={e=>onSetData(ex.id,si,"weight",e.target.value)}
-                                    style={{background:C.card,border:`1px solid ${sd.done?"rgba(232,255,71,.4)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
-                                  <input type="number" inputMode="numeric" placeholder={psd.reps?String(psd.reps):"reps"}
-                                    value={sd.reps||""} onChange={e=>onSetData(ex.id,si,"reps",e.target.value)}
-                                    style={{background:C.card,border:`1px solid ${sd.done?"rgba(232,255,71,.4)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
-                                  <div onClick={()=>onToggleSetDone(ex.id,si)}
-                                    style={{width:26,height:26,borderRadius:6,border:`2px solid ${sd.done?C.accent:C.border}`,background:sd.done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",margin:"0 auto"}}>
-                                    {sd.done&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                  </div>
+                            {ex.noWeight?(
+                              <div style={{paddingTop:8}}>
+                                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em",marginBottom:7}}>Sets completed</div>
+                                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                                  {Array.from({length:numSets},(_,si)=>{
+                                    const cd=currentSets[si]||{};
+                                    return (
+                                      <div key={si} onClick={()=>onToggleSetDone(ex.id,si)}
+                                        style={{width:36,height:36,borderRadius:8,border:`2px solid ${cd.done?C.accent:C.border}`,background:cd.done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",flexDirection:"column",gap:1}}>
+                                        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:cd.done?"#0a0a0f":C.muted,fontWeight:700}}>{si+1}</div>
+                                        {cd.done&&<svg width="8" height="6" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
-                              );
-                            })}
-                            {prevExSets.some(s=>s&&s.weight)&&(
-                              <div style={{marginTop:6,padding:"5px 9px",background:"rgba(71,200,255,.06)",border:"1px solid rgba(71,200,255,.15)",borderRadius:6,fontFamily:"'DM Mono',monospace",fontSize:10,color:C.blue}}>
-                                Last: {prevExSets.filter(s=>s&&s.weight).map((s,i)=>`${s.weight}kg×${s.reps||'?'}`).join(' · ')}
                               </div>
+                            ):(
+                              <>
+                                <div style={{display:"grid",gridTemplateColumns:"22px 1fr 1fr 26px",gap:5,padding:"7px 0 4px",fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em"}}>
+                                  <div>#</div><div>kg</div><div>Reps</div><div></div>
+                                </div>
+                                {Array.from({length:numSets},(_,si)=>{
+                                  const cd=currentSets[si]||{};
+                                  const ld=lastSets[si]||{};
+                                  const isPrefill=!hasCurrentData&&ld.weight;
+                                  return (
+                                    <div key={si} style={{display:"grid",gridTemplateColumns:"22px 1fr 1fr 26px",gap:5,marginBottom:5,alignItems:"center"}}>
+                                      <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:cd.done?C.accent:C.muted,textAlign:"center",fontWeight:700}}>{si+1}</div>
+                                      <input type="number" inputMode="decimal" placeholder={ld.weight?String(ld.weight):"kg"}
+                                        value={cd.weight||""} onChange={e=>onSetData(ex.id,si,"weight",e.target.value)}
+                                        style={{background:C.card,border:`1px solid ${cd.done?"rgba(232,255,71,.4)":isPrefill?"rgba(71,200,255,.25)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
+                                      <input type="number" inputMode="numeric" placeholder={ld.reps?String(ld.reps):"reps"}
+                                        value={cd.reps||""} onChange={e=>onSetData(ex.id,si,"reps",e.target.value)}
+                                        style={{background:C.card,border:`1px solid ${cd.done?"rgba(232,255,71,.4)":isPrefill?"rgba(71,200,255,.25)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
+                                      <div onClick={()=>onToggleSetDone(ex.id,si)}
+                                        style={{width:26,height:26,borderRadius:6,border:`2px solid ${cd.done?C.accent:C.border}`,background:cd.done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",margin:"0 auto"}}>
+                                        {cd.done&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                {lastSets.some(s=>s&&s.weight)&&(
+                                  <div style={{marginTop:6,padding:"5px 9px",background:"rgba(71,200,255,.06)",border:"1px solid rgba(71,200,255,.15)",borderRadius:6,fontFamily:"'DM Mono',monospace",fontSize:10,color:C.blue}}>
+                                    Last: {lastSets.filter(s=>s&&s.weight).map((s,i)=>`${s.weight}kg×${s.reps||'?'}`).join(' · ')}
+                                  </div>
+                                )}
+                              </>
                             )}
                           </div>
                         )}
@@ -766,6 +806,62 @@ function ProgressView({allData,onNav}){
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ─── FINISHER BLOCK ──────────────────────────────────────────────────────────
+function FinisherBlock({sec,secIdx,dayData,onFinData}){
+  const fins=dayData.fins||{};
+  const key=`sec${secIdx}`;
+  const roundsDone=fins[key]||[];
+
+  // Parse number of rounds from rounds field or label
+  function parseRounds(r){
+    if(!r) return 2;
+    if(typeof r==="string"){
+      const m=r.match(/(\d+)/);
+      return m?parseInt(m[1]):2;
+    }
+    return 2;
+  }
+  const numRounds=sec.trackable?parseRounds(sec.rounds):0;
+  const allRoundsDone=numRounds>0&&roundsDone.filter(Boolean).length===numRounds;
+
+  return (
+    <div style={{background:"linear-gradient(135deg,rgba(232,255,71,.06),rgba(232,255,71,.02))",border:`1px solid ${allRoundsDone?"rgba(106,255,71,.35)":"rgba(232,255,71,.2)"}`,borderRadius:10,padding:"10px 12px",marginTop:12,transition:"border-color .2s"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",color:allRoundsDone?"#6aff47":C.accent}}>{sec.lbl}</div>
+        {sec.trackable&&(
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:allRoundsDone?"#6aff47":C.muted}}>
+            {roundsDone.filter(Boolean).length}/{numRounds} done
+          </div>
+        )}
+      </div>
+      {/* Exercise list */}
+      {sec.cs.map((c,ci)=>(
+        <div key={ci} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:ci<sec.cs.length-1?"1px solid rgba(232,255,71,.08)":"none",fontSize:12}}>
+          <span style={{color:C.text}}>{c.n}</span>
+          <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.accent}}>{c.v}</span>
+        </div>
+      ))}
+      {/* Round trackers */}
+      {sec.trackable&&(
+        <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em",marginRight:2}}>Rounds:</div>
+          {Array.from({length:numRounds},(_,ri)=>{
+            const done=roundsDone[ri]||false;
+            return (
+              <div key={ri} onClick={()=>onFinData(secIdx,ri)}
+                style={{width:32,height:32,borderRadius:8,border:`2px solid ${done?C.accent:C.border}`,background:done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",flexDirection:"column",gap:1}}>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:done?"#0a0a0f":C.muted,fontWeight:700}}>{ri+1}</div>
+                {done&&<svg width="8" height="6" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+            );
+          })}
+          {allRoundsDone&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#6aff47",marginLeft:4}}>✓ Complete!</div>}
+        </div>
+      )}
     </div>
   );
 }
