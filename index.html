@@ -187,8 +187,8 @@ function getDays(w) {
         {id:"mon-b3",ic:"🔙",n:"Chest-Supported DB Row",s:csrS,note:"Wide elbow angle · squeeze rear delts · upper back width"},
       ]},
       {lbl:`Finisher — ${finR}`,fin:true,cs:[
-        {n:"KB Swings (glute drive)",v:"15 reps"},
-        {n:"Cable lateral raise",v:"12/side"},
+        {n:"KB Swings (glute drive)",v:"15 reps",weighted:true},
+        {n:"Cable lateral raise",v:"12/side",weighted:true},
         {n:"Banded glute bridge",v:"20 reps"},
         {n:"Rest",v:"60s"},
       ]},
@@ -255,8 +255,8 @@ function getDays(w) {
         {id:"thu-b3",ic:"🔙",n:"Rear Delt Fly (DB or cable)",s:rdS,note:"Slight bend in elbow · lead with elbow · horizontal pull"},
       ]},
       {lbl:"Shoulder Health — 10 min",fin:true,cs:[
-        {n:"Face pull w/ ext. rotation",v:"3x20"},
-        {n:"Upright row (cable)",v:"3x15"},
+        {n:"Face pull w/ ext. rotation",v:"3x20",weighted:true},
+        {n:"Upright row (cable)",v:"3x15",weighted:true},
         {n:"Band external rotation",v:"2x20/side"},
       ]},
     ]},
@@ -276,7 +276,7 @@ function getDays(w) {
         {id:"fri-b2",ic:"🔵",n:"Banded Pull-Ups (wide grip aim)",s:puS,note:"",banded:true},
       ]},
       {lbl:`AMRAP — ${amrp}`,fin:true,cs:[
-        {n:"DB Lateral raise",v:"12 reps"},
+        {n:"DB Lateral raise",v:"12 reps",weighted:true},
         {n:"Hip thrust (BW or banded)",v:"15 reps"},
         {n:"Wide-grip inverted row",v:"10 reps"},
         {n:"Bar-facing burpees",v:"5 reps"},
@@ -354,7 +354,12 @@ function App() {
     exSets[exId]=arr;
     updateDayData({exSets});
   }
-  function updateFinData(secIdx,roundIdx){
+  function updateFinData(secIdx,roundIdx,newFinsObj){
+    if(roundIdx===-1&&newFinsObj){
+      // Weight update from FinisherBlock
+      updateDayData({fins:newFinsObj});
+      return;
+    }
     const fins={...(dayData.fins||{})};
     const key=`sec${secIdx}`;
     const rounds=[...(fins[key]||[])];
@@ -655,10 +660,10 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
                                     <div key={si} style={{display:"grid",gridTemplateColumns:"22px 1fr 1fr 26px",gap:5,marginBottom:5,alignItems:"center"}}>
                                       <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:cd.done?C.accent:C.muted,textAlign:"center",fontWeight:700}}>{si+1}</div>
                                       <input type="number" inputMode="decimal" placeholder={ld.weight?String(ld.weight):"kg"}
-                                        value={cd.weight||""} onChange={e=>onSetData(ex.id,si,"weight",e.target.value)}
+                                        value={cd.weight||(isPrefill?String(ld.weight):"")} onChange={e=>onSetData(ex.id,si,"weight",e.target.value)}
                                         style={{background:C.card,border:`1px solid ${cd.done?"rgba(232,255,71,.4)":isPrefill?"rgba(71,200,255,.25)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
                                       <input type="number" inputMode="numeric" placeholder={ld.reps?String(ld.reps):"reps"}
-                                        value={cd.reps||""} onChange={e=>onSetData(ex.id,si,"reps",e.target.value)}
+                                        value={cd.reps||(isPrefill?String(ld.reps||""):"")} onChange={e=>onSetData(ex.id,si,"reps",e.target.value)}
                                         style={{background:C.card,border:`1px solid ${cd.done?"rgba(232,255,71,.4)":isPrefill?"rgba(71,200,255,.25)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
                                       <div onClick={()=>onToggleSetDone(ex.id,si)}
                                         style={{width:26,height:26,borderRadius:6,border:`2px solid ${cd.done?C.accent:C.border}`,background:cd.done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",margin:"0 auto"}}>
@@ -812,43 +817,96 @@ function ProgressView({allData,onNav}){
 
 // ─── FINISHER BLOCK ──────────────────────────────────────────────────────────
 function FinisherBlock({sec,secIdx,dayData,onFinData}){
+  const [expandedItem,setExpandedItem]=useState(null);
   const fins=dayData.fins||{};
   const key=`sec${secIdx}`;
   const roundsDone=fins[key]||[];
+  const itemWeights=fins[key+"_w"]||{};  // {itemIdx: [{weight,reps},...rounds]}
 
-  // Parse number of rounds from rounds field or label
   function parseRounds(r){
     if(!r) return 2;
-    if(typeof r==="string"){
-      const m=r.match(/(\d+)/);
-      return m?parseInt(m[1]):2;
-    }
+    if(typeof r==="string"){const m=r.match(/(\d+)/);return m?parseInt(m[1]):2;}
     return 2;
   }
   const numRounds=sec.trackable?parseRounds(sec.rounds):0;
   const allRoundsDone=numRounds>0&&roundsDone.filter(Boolean).length===numRounds;
 
+  function updateItemWeight(itemIdx,roundIdx,field,val){
+    const iw={...itemWeights};
+    const rounds=[...(iw[itemIdx]||[])];
+    rounds[roundIdx]={...(rounds[roundIdx]||{}),[field]:val};
+    iw[itemIdx]=rounds;
+    // Store in fins under a _w suffix key
+    const newFins={...fins,[key]:roundsDone,[key+"_w"]:iw};
+    onFinData(secIdx,-1,newFins);  // -1 signals a weight update
+  }
+
   return (
     <div style={{background:"linear-gradient(135deg,rgba(232,255,71,.06),rgba(232,255,71,.02))",border:`1px solid ${allRoundsDone?"rgba(106,255,71,.35)":"rgba(232,255,71,.2)"}`,borderRadius:10,padding:"10px 12px",marginTop:12,transition:"border-color .2s"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
         <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:".14em",textTransform:"uppercase",color:allRoundsDone?"#6aff47":C.accent}}>{sec.lbl}</div>
         {sec.trackable&&(
           <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:allRoundsDone?"#6aff47":C.muted}}>
-            {roundsDone.filter(Boolean).length}/{numRounds} done
+            {roundsDone.filter(Boolean).length}/{numRounds} rounds
           </div>
         )}
       </div>
-      {/* Exercise list */}
-      {sec.cs.map((c,ci)=>(
-        <div key={ci} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:ci<sec.cs.length-1?"1px solid rgba(232,255,71,.08)":"none",fontSize:12}}>
-          <span style={{color:C.text}}>{c.n}</span>
-          <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.accent}}>{c.v}</span>
-        </div>
-      ))}
-      {/* Round trackers */}
+
+      {/* Per-item rows */}
+      <div style={{display:"flex",flexDirection:"column",gap:4}}>
+        {sec.cs.map((c,ci)=>{
+          const isRest=c.n.toLowerCase()==="rest";
+          const isExpanded=expandedItem===ci;
+          const iWeights=itemWeights[ci]||[];
+          const hasWeights=iWeights.some(r=>r&&r.weight);
+          const summary=hasWeights?iWeights.filter(r=>r&&r.weight).map((r,i)=>`R${i+1}:${r.weight}kg`).join(' '):null;
+
+          return (
+            <div key={ci}>
+              <div
+                onClick={()=>c.weighted?setExpandedItem(isExpanded?null:ci):null}
+                style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:ci<sec.cs.length-1?"1px solid rgba(232,255,71,.08)":"none",cursor:c.weighted?"pointer":"default"}}>
+                <div>
+                  <span style={{fontSize:12,color:isRest?C.muted:C.text}}>{c.n}</span>
+                  {summary&&!isExpanded&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.accent,marginTop:1}}>{summary}</div>}
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.accent}}>{c.v}</span>
+                  {c.weighted&&<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2.5" style={{transform:isExpanded?"rotate(180deg)":"rotate(0)",transition:"transform .2s"}}><polyline points="6,9 12,15 18,9"/></svg>}
+                </div>
+              </div>
+              {/* Weight log per round */}
+              {c.weighted&&isExpanded&&(
+                <div style={{padding:"8px 0 6px",borderBottom:ci<sec.cs.length-1?"1px solid rgba(232,255,71,.08)":"none"}}>
+                  <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(numRounds,4)},1fr)`,gap:5}}>
+                    {Array.from({length:numRounds},(_,ri)=>{
+                      const rd=iWeights[ri]||{};
+                      return (
+                        <div key={ri} style={{background:C.card,borderRadius:7,padding:"6px 4px"}}>
+                          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textAlign:"center",marginBottom:4}}>R{ri+1}</div>
+                          <input type="number" inputMode="decimal" placeholder="kg"
+                            value={rd.weight||""}
+                            onChange={e=>updateItemWeight(ci,ri,"weight",e.target.value)}
+                            style={{width:"100%",background:C.surface,border:`1px solid ${rd.weight?"rgba(232,255,71,.3)":C.border}`,borderRadius:5,padding:"5px 4px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:12,outline:"none",textAlign:"center",display:"block",marginBottom:3}}/>
+                          <input type="number" inputMode="numeric" placeholder="reps"
+                            value={rd.reps||""}
+                            onChange={e=>updateItemWeight(ci,ri,"reps",e.target.value)}
+                            style={{width:"100%",background:C.surface,border:`1px solid ${rd.reps?"rgba(232,255,71,.3)":C.border}`,borderRadius:5,padding:"5px 4px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:12,outline:"none",textAlign:"center",display:"block"}}/>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Round tick buttons */}
       {sec.trackable&&(
         <div style={{marginTop:10,display:"flex",gap:6,alignItems:"center"}}>
-          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em",marginRight:2}}>Rounds:</div>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em",marginRight:2}}>Done:</div>
           {Array.from({length:numRounds},(_,ri)=>{
             const done=roundsDone[ri]||false;
             return (
@@ -859,7 +917,7 @@ function FinisherBlock({sec,secIdx,dayData,onFinData}){
               </div>
             );
           })}
-          {allRoundsDone&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#6aff47",marginLeft:4}}>✓ Complete!</div>}
+          {allRoundsDone&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#6aff47",marginLeft:4}}>✓ All done!</div>}
         </div>
       )}
     </div>
