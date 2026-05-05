@@ -175,7 +175,7 @@ function getDays(w) {
 
   return [
     // ── MON: Hybrid Strength — Lower compound + Upper back width + Lat delts ──
-    {num:"MON",name:"Monday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:85,ic:"#e8ff47",secs:[
+    {num:"MON",kcal:2300,calNote:"Heavy strength day · 140g protein · carbs around training",name:"Monday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:85,ic:"#e8ff47",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build",noWeight:true},
         {id:"mon-wu-2",ic:"🔄",n:"Banded pull-aparts + hip circles",s:"2x10 each",note:"",noWeight:true},
@@ -202,7 +202,7 @@ function getDays(w) {
     ]},
 
     // ── TUE: Lower Body — Glute & posterior chain focus ──────────────────────
-    {num:"TUE",name:"Tuesday",title:"Lower Body — Glutes",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
+    {num:"TUE",kcal:2250,calNote:"Lower body day · 140g protein · prioritise post-workout carbs",name:"Tuesday",title:"Lower Body — Glutes",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"tue-wu-1",ic:"🍑",n:"Banded clamshells + glute bridges",s:"2x15 each",note:"Activate glutes before loading",noWeight:true},
         {id:"tue-wu-2",ic:"⚡",n:"Hip flexor stretch + leg swings",s:"90s/side",note:"",noWeight:true},
@@ -216,7 +216,7 @@ function getDays(w) {
         {id:"tue-b2",ic:"🦵",n:"Romanian Deadlift",s:rdlS,note:"Hinge deep · feel hamstring tension · no lower back rounding"},
         {id:"tue-b3",ic:"🍑",n:"Cable Kickback",s:ckbS,note:"Slight forward lean · squeeze glute at full extension"},
       ]},
-      {lbl:"Finisher — 2 rounds",fin:true,cs:[
+      {lbl:"Finisher — 2 rounds",fin:true,trackable:true,rounds:"2 rounds",cs:[
         {n:"Lateral band walks",v:"20 steps each way"},
         {n:"Frog pumps",v:"25 reps"},
         {n:"Sumo squat pulse",v:"20 reps"},
@@ -225,7 +225,7 @@ function getDays(w) {
     ]},
 
     // ── WED: Conditioning — includes shoulder & glute work in circuits ────────
-    {num:"WED",name:"Wednesday",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
+    {num:"WED",kcal:2150,calNote:"Conditioning day · run counts as steps · 140g protein",name:"Wednesday",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1x",note:"",noWeight:true},
         {id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm circles",noWeight:true},
@@ -248,7 +248,7 @@ function getDays(w) {
     ]},
 
     // ── THU: Upper Body — Lateral delt + upper back width priority ────────────
-    {num:"THU",name:"Thursday",title:"Upper Body — Delts & Back Width",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
+    {num:"THU",kcal:2200,calNote:"Upper body day · 140g protein · moderate carbs",name:"Thursday",title:"Upper Body — Delts & Back Width",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"3x15",note:"Rear delt primer",noWeight:true},
         {id:"thu-wu-2",ic:"🤸",n:"Scap pull-ups + face pulls",s:"2x10",note:"Warm up the entire upper back",noWeight:true},
@@ -271,7 +271,7 @@ function getDays(w) {
     ]},
 
     // ── FRI: Hybrid Strength — Posterior chain + Shoulder width circuit ───────
-    {num:"FRI",name:"Friday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:92,ic:"#e8ff47",secs:[
+    {num:"FRI",kcal:2300,calNote:"Heavy hybrid day · 140g protein · highest carb day",name:"Friday",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:92,ic:"#e8ff47",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR",noWeight:true},
         {id:"fri-wu-2",ic:"🔄",n:"Banded abductions + shoulder CARs",s:"2x12",note:"Prime glutes and shoulders",noWeight:true},
@@ -284,7 +284,7 @@ function getDays(w) {
         {id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout · overhead strength"},
         {id:"fri-b2",ic:"🔵",n:"Banded Pull-Ups (wide grip aim)",s:puS,note:"",banded:true},
       ]},
-      {lbl:`AMRAP — ${amrp}`,fin:true,cs:[
+      {lbl:`AMRAP — ${amrp}`,fin:true,trackable:true,rounds:amrp,cs:[
         {n:"DB Lateral raise",v:"12 reps",weighted:true},
         {n:"Hip thrust (BW or banded)",v:"15 reps"},
         {n:"Wide-grip inverted row",v:"10 reps"},
@@ -293,7 +293,7 @@ function getDays(w) {
     ]},
 
     // ── SAT: Conditioning + Endurance + Glute/Delt accessory finisher ─────────
-    {num:"SAT",name:"Saturday",title:"Conditioning + Endurance",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
+    {num:"SAT",kcal:2200,calNote:"Endurance day · run counts as steps · 140g protein",name:"Saturday",title:"Conditioning + Endurance",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
       {lbl:"Aerobic Base — 18 min",exs:[
         {id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:"13 min",note:"65–70% MHR · nasal breathing",noWeight:true},
         {id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs · upper back warm",noWeight:true},
@@ -317,7 +317,7 @@ function getDays(w) {
         {n:"Diaphragmatic breathing",v:"1 min"},
       ]},
     ]},
-    {num:"SUN",name:"Sunday",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
+    {num:"SUN",kcal:1700,calNote:"Rest day · 140g protein · lower carbs · focus on recovery",name:"Sunday",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
   ].map(d=>({...d,puBand}));
 }
 
@@ -583,6 +583,7 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
             <span style={{background:ts.bg,color:ts.color,fontFamily:"'DM Mono',monospace",fontSize:9,textTransform:"uppercase",padding:"2px 9px",borderRadius:100,fontWeight:600}}>{day.tag}</span>
             <span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>{day.dur}</span>
+            {day.kcal&&<span style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:"#fb923c",fontWeight:600}}>{day.kcal} kcal</span>}
           </div>
         </div>
         {/* Intensity */}
@@ -710,6 +711,22 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
           </div>
           <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,whiteSpace:"nowrap"}}>{checkedCount}/{allExIds.length} done</div>
         </div>
+
+        {/* Calorie target */}
+        {day.kcal&&(
+          <div style={{marginTop:12,background:"rgba(251,146,60,.06)",border:"1px solid rgba(251,146,60,.2)",borderRadius:10,padding:"10px 13px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#fb923c",textTransform:"uppercase",letterSpacing:".14em"}}>Daily Calorie Target</div>
+              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:"#fb923c",lineHeight:1}}>{day.kcal} <span style={{fontSize:12,fontFamily:"'DM Mono',monospace",fontWeight:400}}>kcal</span></div>
+            </div>
+            <div style={{display:"flex",gap:12,marginBottom:4}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>Protein: <span style={{color:C.text}}>140g</span></div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>BMR: <span style={{color:C.text}}>1,461 kcal</span></div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>Steps: <span style={{color:C.text}}>{day.num==="WED"||day.num==="SAT"?"run counts":"~10k"}</span></div>
+            </div>
+            <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{day.calNote}</div>
+          </div>
+        )}
 
         {/* Session log */}
         <div style={{marginTop:12,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 13px"}}>
