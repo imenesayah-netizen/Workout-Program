@@ -169,6 +169,9 @@ function getDays(w) {
   const intv  = p===1?"4x2 min hard":p===2?"5x2 min hard":"6x90s hard";
   const amrp  = p===1?"8 min":p===2?"10 min":"12 min";
   const finR  = p===1?"2 rounds":"3 rounds";
+  // Core progressions (scale with phase)
+  const coreA = p===1?"3x8" :p===2?"3x10":"4x10";
+  const coreB = p===1?"3x20s":p===2?"3x30s":"4x30s";
 
   return [
     // ── MON: Hybrid Strength — Lower compound + Upper back width + Lat delts ──
@@ -186,7 +189,11 @@ function getDays(w) {
         {id:"mon-b2",ic:"💪",n:"DB Lateral Raise",s:lrS,note:"Lead with elbow · slight forward tilt · control eccentric"},
         {id:"mon-b3",ic:"🔙",n:"Chest-Supported DB Row",s:csrS,note:"Wide elbow angle · squeeze rear delts · upper back width"},
       ]},
-      {lbl:`Finisher — ${finR}`,fin:true,cs:[
+      {lbl:"Core Superset — 8 min",exs:[
+        {id:"mon-c1",ic:"🎯",n:"Dead Bug",s:coreA,note:"Lower back pressed flat · opposite arm/leg · exhale as you extend",noWeight:true},
+        {id:"mon-c2",ic:"🎯",n:"Pallof Press (cable)",s:coreB,note:"Anti-rotation · stand tall · resist the pull · both sides"},
+      ]},
+      {lbl:`Finisher — ${finR}`,fin:true,trackable:true,rounds:finR,cs:[
         {n:"KB Swings (glute drive)",v:"15 reps",weighted:true},
         {n:"Cable lateral raise",v:"12/side",weighted:true},
         {n:"Banded glute bridge",v:"20 reps"},
@@ -232,10 +239,11 @@ function getDays(w) {
       {lbl:"For Time — 20 min cap",exs:[
         {id:"wed-b1",ic:"🏃",n:`${ftR}: 400m run + 12 wall balls`,s:"For time",note:"Pace conservatively on round 1",noWeight:true},
       ]},
-      {lbl:"Cool-Down — 5 min",fin:true,cs:[
-        {n:"Hip flexor hold",v:"60s/side"},
-        {n:"Pigeon pose",v:"60s/side"},
-        {n:"Diaphragmatic breathing",v:"2 min"},
+      {lbl:"Ab Finisher — 5 min",fin:true,trackable:true,rounds:"3 rounds",cs:[
+        {n:"Cable crunch",v:"15 reps",weighted:true},
+        {n:"Hollow body hold",v:"20s",},
+        {n:"Oblique crunch (each side)",v:"12 reps"},
+        {n:"Rest",v:"30s"},
       ]},
     ]},
 
@@ -254,10 +262,11 @@ function getDays(w) {
         {id:"thu-b2",ic:"🔙",n:"Meadows Row (single-arm)",s:mrS,note:"Elbow high and wide · upper back + rear delt"},
         {id:"thu-b3",ic:"🔙",n:"Rear Delt Fly (DB or cable)",s:rdS,note:"Slight bend in elbow · lead with elbow · horizontal pull"},
       ]},
-      {lbl:"Shoulder Health — 10 min",fin:true,cs:[
+      {lbl:"Shoulder Health + Core — 12 min",fin:true,trackable:true,rounds:"3 rounds",cs:[
         {n:"Face pull w/ ext. rotation",v:"3x20",weighted:true},
         {n:"Upright row (cable)",v:"3x15",weighted:true},
-        {n:"Band external rotation",v:"2x20/side"},
+        {n:"Hollow body rock",v:"10 reps"},
+        {n:"Side plank + hip dip",v:"20s + 10 dips/side"},
       ]},
     ]},
 
@@ -269,7 +278,7 @@ function getDays(w) {
       ]},
       {lbl:"Complex A — Lower — 18 min",exs:[
         {id:"fri-a1",ic:"🏋️",n:"Trap Bar Deadlift",s:tdlS,note:"Explosive concentric · strong glute lockout"},
-        {id:"fri-a2",ic:"🦵",n:"Step-Up (weighted)",s:suS,note:"Drive through heel · single-leg glute activation",noWeight:true},
+        {id:"fri-a2",ic:"🦵",n:"Step-Up (weighted)",s:suS,note:"Drive through heel · single-leg glute activation"},
       ]},
       {lbl:"Complex B — Upper — 15 min",exs:[
         {id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout · overhead strength"},
@@ -297,9 +306,15 @@ function getDays(w) {
         {id:"sat-b2",ic:"💪",n:"Single-arm cable lateral raise",s:clrS,note:"Constant tension · rear cable for better line of pull"},
         {id:"sat-b3",ic:"🍑",n:"Banded hip abduction (seated)",s:abS,note:"Slow + controlled · glute med burns",noWeight:true},
       ]},
-      {lbl:"Cool-Down — 5 min",fin:true,cs:[
-        {n:"Foam roll glutes + IT band",v:"2 min"},
-        {n:"Pigeon pose",v:"90s/side"},
+      {lbl:"Ab Finisher — 7 min",fin:true,trackable:true,rounds:"3 rounds",cs:[
+        {n:"Hanging leg raise",v:"10 reps"},
+        {n:"Side plank",v:"25s/side"},
+        {n:"Dragon flag (negative / tuck)",v:"5 reps"},
+        {n:"Rest",v:"30s"},
+      ]},
+      {lbl:"Cool-Down — 3 min",fin:true,cs:[
+        {n:"Pigeon pose",v:"60s/side"},
+        {n:"Diaphragmatic breathing",v:"1 min"},
       ]},
     ]},
     {num:"SUN",name:"Sunday",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
