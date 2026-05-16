@@ -749,7 +749,7 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
             </div>
             <div style={{display:"flex",gap:8,marginBottom:4,flexWrap:"wrap"}}>
               <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>P: <span style={{color:"#47c8ff",fontWeight:600}}>148g</span></div>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>C: <span style={{color:C.accent,fontWeight:600}}>{day.num==="MON"||day.num==="FRI"?"265g":day.num==="SUN"?"160g":day.num==="D3"||day.num==="D6"?"210g":"230g"}</span></div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>C: <span style={{color:C.accent,fontWeight:600}}>{day.num==="R"?"160g":"260g"}</span></div>
               <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>F: <span style={{color:"#fb923c",fontWeight:600}}>{day.num==="MON"||day.num==="FRI"?"65g":day.num==="D3"||day.num==="D6"?"62g":"63g"}</span></div>
               <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted}}>Steps: <span style={{color:C.text}}>{day.num==="D3"||day.num==="D6"?"run counts":"~10k"}</span></div>
             </div>
@@ -1325,7 +1325,7 @@ function NutritionView(){
             🔵 Same split every training day · adjust oats portion if pre-workout has carbs
           </div>
           <MRow meal="Post-workout oat bowl" timing="Within 60 min · HIGH-GI carbs OK" p={50} c={100} f={10} col={C.accent}
-            note="Fast carbs welcome — banana, honey, white rice in bowl fine. Keep fat under 10g. Non-dairy protein only. Add banana/dates pre-workout on D1/D5 if needed."/>
+            note="Fast carbs welcome — banana, honey, white rice in bowl fine. 100g carbs here. Keep fat under 10g. Non-dairy protein only. Add banana/dates pre-workout on D1/D5 if needed."/>
           <MRow meal="Lunch" timing="2–3h after · MODERATE GI" p={40} c={75} f={15} col={C.accent}
             note="Sweet potato, brown rice, quinoa, buckwheat noodles. Salmon or tuna 3x/week minimum. Olive oil only."/>
           <MRow meal="Snack" timing="Afternoon · LOW GI" p={25} c={50} f={12} col={C.accent}
