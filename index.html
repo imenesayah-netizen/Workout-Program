@@ -1552,13 +1552,25 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 
 <script>
 if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', {scope:'./'})
-      .then(reg => {
-        // Check for updates every 60s
-        setInterval(() => reg.update(), 60000);
-      })
-      .catch(err => console.warn('SW failed:', err));
+  window.addEventListener('load', async () => {
+    // 1. Clear ALL caches immediately
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+
+    // 2. Unregister all old service workers
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+
+    // 3. Register fresh
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js?v=6', {scope:'./'});
+      // Force update check immediately
+      await reg.update();
+      // Then check every 60s
+      setInterval(() => reg.update(), 60000);
+    } catch(err) {
+      console.warn('SW failed:', err);
+    }
   });
 }
 </script>
