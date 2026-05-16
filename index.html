@@ -799,65 +799,43 @@ function BodyView({allData, onSave}){
     vfa:36.6, tbw:37.8, protein:10.2, bcm:33.6, score:86
   };
 
-  // InBody schedule: Week 1 (start), then every 4 weeks
-  // Start date: 2026-05-16
-  const START = new Date("2026-05-16");
-  const inBodyDates = [0,4,8,12].map(w => {
-    const d = new Date(START);
-    d.setDate(d.getDate() + w*7);
-    return d;
-  });
   const today = new Date();
-
-  function formatDate(d){
-    return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
-  }
-  function daysUntil(d){
-    return Math.ceil((d-today)/(1000*60*60*24));
-  }
+  function formatDate(d){ return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
+  function daysUntil(d){ return Math.ceil((d-today)/(1000*60*60*24)); }
 
   const saved = allData.__body || {};
-  const entries = saved.entries || []; // [{date, weight, smm, pbf, bmr, vfa, score}]
-  const [form, setForm] = React.useState({
-    date: new Date().toISOString().split("T")[0],
-    weight:"", smm:"", pbf:"", bmr:"", vfa:"", score:""
-  });
-  const [saved2, setSaved2] = React.useState(false);
+  const entries = saved.entries || [];
+  const [form,setForm]=React.useState({date:new Date().toISOString().split("T")[0],weight:"",smm:"",pbf:"",bmr:"",vfa:"",score:""});
+  const [scanDate,setScanDate]=React.useState(saved.nextScanDate||"");
+  const [saved2,setSaved2]=React.useState(false);
 
   function saveEntry(){
     if(!form.weight) return;
-    const newEntries = [...entries, {...form}].sort((a,b)=>a.date.localeCompare(b.date));
-    onSave({__body:{...saved, entries:newEntries}});
+    const newEntries=[...entries,{...form}].sort((a,b)=>a.date.localeCompare(b.date));
+    onSave({__body:{...saved,entries:newEntries,nextScanDate:scanDate}});
     setSaved2(true);
-    setTimeout(()=>setSaved2(false), 2000);
+    setTimeout(()=>setSaved2(false),2000);
     setForm({date:new Date().toISOString().split("T")[0],weight:"",smm:"",pbf:"",bmr:"",vfa:"",score:""});
   }
+  function saveScanDate(d){ setScanDate(d); onSave({__body:{...saved,nextScanDate:d}}); }
 
-  // Latest entry or baseline
-  const latest = entries.length > 0 ? entries[entries.length-1] : null;
-  const current = latest || BASELINE;
+  const latest = entries.length>0?entries[entries.length-1]:null;
   const baseline = BASELINE;
-
-  function delta(key, invert=false){
+  function delta(key,invert=false){
     if(!latest) return null;
-    const d = parseFloat(latest[key]) - parseFloat(baseline[key]);
+    const d=parseFloat(latest[key])-parseFloat(baseline[key]);
     if(isNaN(d)) return null;
-    const good = invert ? d < 0 : d > 0;
-    return {val:d, good};
+    return {val:d, good:invert?d<0:d>0};
   }
-
-  const metrics = [
-    {key:"weight", label:"Weight", unit:"kg",    invert:false, neutral:true},
-    {key:"smm",    label:"Muscle (SMM)", unit:"kg", invert:false},
-    {key:"pbf",    label:"Body Fat %",  unit:"%",  invert:true},
-    {key:"vfa",    label:"Visceral Fat",unit:"cm²",invert:true},
-    {key:"bmr",    label:"BMR",         unit:"kcal",invert:false},
-    {key:"score",  label:"InBody Score",unit:"/100",invert:false},
+  const metrics=[
+    {key:"weight",label:"Weight",     unit:"kg",  invert:false,neutral:true},
+    {key:"smm",   label:"Muscle (SMM)",unit:"kg", invert:false},
+    {key:"pbf",   label:"Body Fat %", unit:"%",   invert:true},
+    {key:"vfa",   label:"Visceral Fat",unit:"cm²",invert:true},
+    {key:"bmr",   label:"BMR",        unit:"kcal",invert:false},
+    {key:"score", label:"InBody Score",unit:"/100",invert:false},
   ];
-
-  // Next InBody date
-  const nextInBody = inBodyDates.find(d => daysUntil(d) >= 0);
-  const nextDays = nextInBody ? daysUntil(nextInBody) : null;
+  const nextDays=scanDate?daysUntil(new Date(scanDate)):null;
 
   return (
     <div className="fade-in">
@@ -865,53 +843,71 @@ function BodyView({allData, onSave}){
         BODY <span style={{color:"#c084fc"}}>TRACKER</span>
       </div>
       <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,marginBottom:16}}>
-        Baseline: InBody 8 May 2026 · Start date: 16 May 2026
+        Baseline: InBody 8 May 2026 · Set your scan date when ready
       </div>
 
-      {/* Next InBody reminder */}
-      {nextInBody && (
+      {/* Next scan reminder */}
+      {scanDate&&nextDays!==null&&nextDays>=0&&(
         <div style={{background:nextDays<=7?"rgba(232,255,71,.1)":"rgba(192,132,252,.06)",
           border:`1px solid ${nextDays<=7?C.accent:"rgba(192,132,252,.3)"}`,
           borderRadius:11,padding:"12px 14px",marginBottom:14}}>
-          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:nextDays<=7?C.accent:"#c084fc",
-            textTransform:"uppercase",letterSpacing:".14em",marginBottom:4}}>
-            {nextDays===0?"TODAY":"Next InBody"} {nextDays>0?`in ${nextDays} days`:""}
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,
+            color:nextDays<=7?C.accent:"#c084fc",textTransform:"uppercase",letterSpacing:".14em",marginBottom:4}}>
+            {nextDays===0?"TODAY — Scan day!":nextDays<=7?"Scan coming up":"Next InBody"}
+            {nextDays>0?` · ${nextDays} days away`:""}
           </div>
           <div style={{fontSize:13,color:C.text,fontWeight:600,marginBottom:3}}>
-            {formatDate(nextInBody)}
+            {new Date(scanDate).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}
           </div>
           <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
-            {nextDays<=3
-              ? "Time to book your InBody scan. Scan first thing in the morning, fasted, same conditions as baseline."
-              : "Scan every 4 weeks for meaningful data. Early morning, fasted, same gym, same time of day."}
+            {nextDays<=3?"Book now. First thing in the morning, fasted, same gym, same machine as 8 May."
+              :"Scan fasted, first thing, same machine as baseline for accurate comparison."}
           </div>
         </div>
       )}
 
-      {/* Schedule strip */}
-      <div style={{marginBottom:16}}>
-        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",
-          letterSpacing:".14em",marginBottom:8}}>InBody Schedule — Every 4 Weeks</div>
-        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
-          {inBodyDates.map((d,i)=>{
-            const days=daysUntil(d);
-            const done=entries.some(e=>e.date===d.toISOString().split("T")[0]) || (i===0&&entries.length>0);
-            const isNext=d===nextInBody;
-            return (
-              <div key={i} style={{flexShrink:0,background:done?"rgba(106,255,71,.08)":isNext?"rgba(192,132,252,.1)":C.card,
-                border:`1px solid ${done?"rgba(106,255,71,.3)":isNext?"#c084fc":C.border}`,
-                borderRadius:10,padding:"10px 12px",minWidth:80,textAlign:"center"}}>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:done?"#6aff47":isNext?"#c084fc":C.muted,
-                  textTransform:"uppercase",marginBottom:3}}>Wk {i===0?"1":i*4+1}</div>
-                <div style={{fontSize:11,color:C.text,fontWeight:600,marginBottom:2}}>
-                  {d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}
-                </div>
-                <div style={{fontSize:9,color:done?"#6aff47":C.muted}}>
-                  {done?"✓ Done":days===0?"Today":days>0?`${days}d`:"Past"}
-                </div>
-              </div>
-            );
-          })}
+      {/* Set next scan date + guidance */}
+      <div style={{background:C.card,border:"1px solid rgba(192,132,252,.25)",borderRadius:10,padding:"12px 13px",marginBottom:14}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#c084fc",textTransform:"uppercase",letterSpacing:".14em",marginBottom:8}}>
+          Set Your Next InBody Date
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:10}}>
+          <input type="date" value={scanDate}
+            min={new Date().toISOString().split("T")[0]}
+            onChange={e=>saveScanDate(e.target.value)}
+            style={{flex:1,background:C.surface,border:`1px solid ${scanDate?"#c084fc":C.border}`,
+              borderRadius:7,padding:"8px 10px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:12,outline:"none"}}/>
+          {scanDate&&<button onClick={()=>saveScanDate("")}
+            style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:7,
+              padding:"8px 10px",color:C.muted,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer"}}>
+            Clear
+          </button>}
+        </div>
+        {/* Timing guidance */}
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".1em",marginBottom:6}}>
+          When to scan after holidays
+        </div>
+        {[
+          {col:"#ff6b6b",label:"Before 9 June — Too early",
+           desc:"Holiday water retention + glycogen still present. Scale may be 1–2kg above true weight. Readings not comparable to baseline."},
+          {col:"#fb923c",label:"9–13 June (Wk 3) — Acceptable",
+           desc:"Holiday effects mostly cleared. Early training adaptations starting. OK for a rough check-in."},
+          {col:"#6aff47",label:"13–20 June (Wk 4) — Ideal",
+           desc:"Deload week — body recovered, consistent eating for 4 weeks. Best conditions for an accurate reading vs baseline."},
+          {col:C.accent, label:"Then every 4 weeks",
+           desc:"Wk 8 (mid-July) and Wk 12 (mid-August). Always fasted, same time, same machine."},
+        ].map((g,i)=>(
+          <div key={i} style={{display:"flex",gap:9,padding:"6px 0",borderBottom:i<3?"1px solid rgba(255,255,255,.04)":"none"}}>
+            <div style={{width:3,borderRadius:2,background:g.col,flexShrink:0,alignSelf:"stretch",minHeight:12}}/>
+            <div>
+              <div style={{fontSize:11,color:g.col,fontWeight:600,marginBottom:1}}>{g.label}</div>
+              <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>{g.desc}</div>
+            </div>
+          </div>
+        ))}
+        <div style={{marginTop:10,padding:"8px 10px",background:"rgba(71,200,255,.06)",
+          border:"1px solid rgba(71,200,255,.15)",borderRadius:8,fontSize:10,color:C.blue,lineHeight:1.6}}>
+          Water retention from holidays takes 10–14 days to clear. The scale may drop 1–2kg in the first 2 weeks — this is water, not fat loss.
         </div>
       </div>
 
@@ -1363,7 +1359,7 @@ function NutritionView(){
             {gi:"HIGH GI — post-workout only",col:"#6aff47",items:"White rice · banana · honey · mango · pineapple · dates"},
             {gi:"MODERATE GI — lunch",col:C.accent,items:"Sweet potato · oats · brown rice · quinoa · buckwheat · basmati · wholemeal wraps"},
             {gi:"LOW GI — snacks & dinner",col:C.blue,items:"Lentils · chickpeas · oatcakes · berries · apple · pear · sourdough · cauliflower rice"},
-            {gi:"ALWAYS AVOID",col:"#ff6b6b",items:"White bread (except post-workout) · pastries · sugary drinks · alcohol · dairy ice cream · seed oils"},
+            {gi:"ALWAYS AVOID",col:"#ff6b6b",items:"White bread (except post-workout) · pastries · sugary drinks · dairy ice cream · seed oils"},
           ].map((g,i)=>(
             <div key={i} style={{display:"flex",gap:10,padding:"8px 12px",background:C.card,borderRadius:9,marginBottom:5,borderLeft:`3px solid ${g.col}`}}>
               <div style={{flex:1}}>
@@ -1506,7 +1502,7 @@ function NutritionView(){
           <Card bg="rgba(255,107,107,.06)" border="rgba(255,107,107,.2)">
             <Item emoji="🥛" title="Dairy (especially whey protein)" desc="Strongest dietary link to hormonal acne. IGF-1 in dairy drives androgen production. Use oat milk, egg-white or pea protein." good={false}/>
             <Item emoji="🍞" title="High-GI carbs at rest" desc="White bread, pastries, sugary drinks spike insulin → androgens → acne. Especially avoid on rest days." good={false}/>
-            <Item emoji="🍺" title="Alcohol" desc="Disrupts liver oestrogen clearance and progesterone production. Worsens both acne and cycle." good={false}/>
+            
             <Item emoji="🌻" title="Seed oils" desc="Sunflower, canola, soybean — high omega-6, pro-inflammatory. Use olive oil instead." good={false}/>
             <Item emoji="☕" title="Excess caffeine (more than 2 coffees)" desc="Raises cortisol which competes with progesterone. Especially avoid after 2pm." good={false}/>
             <Item emoji="🍬" title="Ultra-processed food" desc="Emulsifiers disrupt gut microbiome which regulates oestrogen recycling." good={false}/>
