@@ -487,14 +487,18 @@ function App() {
               <div style={{width:5,height:5,borderRadius:"50%",background:saveStatus==="saved"?C.accent:saveStatus==="saving"?"#fb923c":C.muted,transition:"background .3s"}}/>
               {saveStatus==="saving"?"Saving":saveStatus==="saved"?"Saved":""}
             </div>
-            <div style={{display:"flex",gap:6}}>
+            <div style={{display:"flex",gap:4}}>
               <button onClick={()=>setView(v=>v==="nutrition"?"workout":"nutrition")}
-                style={{background:view==="nutrition"?C.blue:C.card,border:`1px solid ${view==="nutrition"?C.blue:C.border}`,borderRadius:8,padding:"6px 10px",color:view==="nutrition"?"#0a0a0f":C.muted,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:".06em",textTransform:"uppercase"}}>
-                {view==="nutrition"?"← Back":"Nutrition"}
+                style={{background:view==="nutrition"?C.blue:C.card,border:`1px solid ${view==="nutrition"?C.blue:C.border}`,borderRadius:7,padding:"5px 8px",color:view==="nutrition"?"#0a0a0f":C.muted,fontFamily:"'DM Mono',monospace",fontSize:9,cursor:"pointer",letterSpacing:".05em",textTransform:"uppercase"}}>
+                {view==="nutrition"?"←":"Nutr."}
+              </button>
+              <button onClick={()=>setView(v=>v==="body"?"workout":"body")}
+                style={{background:view==="body"?"#c084fc":C.card,border:`1px solid ${view==="body"?"#c084fc":C.border}`,borderRadius:7,padding:"5px 8px",color:view==="body"?"#0a0a0f":C.muted,fontFamily:"'DM Mono',monospace",fontSize:9,cursor:"pointer",letterSpacing:".05em",textTransform:"uppercase"}}>
+                {view==="body"?"←":"Body"}
               </button>
               <button onClick={()=>setView(v=>v==="progress"?"workout":"progress")}
-                style={{background:view==="progress"?C.accent:C.card,border:`1px solid ${view==="progress"?C.accent:C.border}`,borderRadius:8,padding:"6px 10px",color:view==="progress"?"#0a0a0f":C.muted,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:".06em",textTransform:"uppercase"}}>
-                {view==="progress"?"← Back":"Progress"}
+                style={{background:view==="progress"?C.accent:C.card,border:`1px solid ${view==="progress"?C.accent:C.border}`,borderRadius:7,padding:"5px 8px",color:view==="progress"?"#0a0a0f":C.muted,fontFamily:"'DM Mono',monospace",fontSize:9,cursor:"pointer",letterSpacing:".05em",textTransform:"uppercase"}}>
+                {view==="progress"?"←":"Log"}
               </button>
             </div>
           </div>
@@ -511,6 +515,8 @@ function App() {
           <ProgressView allData={allData} onNav={(w,d)=>{setCWeek(w);setCDayIdx(d);setView("workout");}}/>
         ) : view==="nutrition" ? (
           <NutritionView/>
+        ) : view==="body" ? (
+          <BodyView allData={allData} onSave={(d)=>{const n={...allData,...d};setAllData(n);lsSave(n);}}/>
         ) : (
           <>
             {/* PHASE SELECTOR */}
@@ -787,6 +793,235 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
 }
 
 // ─── PROGRESS VIEW ────────────────────────────────────────────────────────────
+function BodyView({allData, onSave}){
+  const BASELINE = {
+    date:"2026-05-08", weight:60.6, smm:28.6, pbf:14.6, bmr:1488,
+    vfa:36.6, tbw:37.8, protein:10.2, bcm:33.6, score:86
+  };
+
+  // InBody schedule: Week 1 (start), then every 4 weeks
+  // Start date: 2026-05-16
+  const START = new Date("2026-05-16");
+  const inBodyDates = [0,4,8,12].map(w => {
+    const d = new Date(START);
+    d.setDate(d.getDate() + w*7);
+    return d;
+  });
+  const today = new Date();
+
+  function formatDate(d){
+    return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+  }
+  function daysUntil(d){
+    return Math.ceil((d-today)/(1000*60*60*24));
+  }
+
+  const saved = allData.__body || {};
+  const entries = saved.entries || []; // [{date, weight, smm, pbf, bmr, vfa, score}]
+  const [form, setForm] = React.useState({
+    date: new Date().toISOString().split("T")[0],
+    weight:"", smm:"", pbf:"", bmr:"", vfa:"", score:""
+  });
+  const [saved2, setSaved2] = React.useState(false);
+
+  function saveEntry(){
+    if(!form.weight) return;
+    const newEntries = [...entries, {...form}].sort((a,b)=>a.date.localeCompare(b.date));
+    onSave({__body:{...saved, entries:newEntries}});
+    setSaved2(true);
+    setTimeout(()=>setSaved2(false), 2000);
+    setForm({date:new Date().toISOString().split("T")[0],weight:"",smm:"",pbf:"",bmr:"",vfa:"",score:""});
+  }
+
+  // Latest entry or baseline
+  const latest = entries.length > 0 ? entries[entries.length-1] : null;
+  const current = latest || BASELINE;
+  const baseline = BASELINE;
+
+  function delta(key, invert=false){
+    if(!latest) return null;
+    const d = parseFloat(latest[key]) - parseFloat(baseline[key]);
+    if(isNaN(d)) return null;
+    const good = invert ? d < 0 : d > 0;
+    return {val:d, good};
+  }
+
+  const metrics = [
+    {key:"weight", label:"Weight", unit:"kg",    invert:false, neutral:true},
+    {key:"smm",    label:"Muscle (SMM)", unit:"kg", invert:false},
+    {key:"pbf",    label:"Body Fat %",  unit:"%",  invert:true},
+    {key:"vfa",    label:"Visceral Fat",unit:"cm²",invert:true},
+    {key:"bmr",    label:"BMR",         unit:"kcal",invert:false},
+    {key:"score",  label:"InBody Score",unit:"/100",invert:false},
+  ];
+
+  // Next InBody date
+  const nextInBody = inBodyDates.find(d => daysUntil(d) >= 0);
+  const nextDays = nextInBody ? daysUntil(nextInBody) : null;
+
+  return (
+    <div className="fade-in">
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,letterSpacing:".04em",marginBottom:3}}>
+        BODY <span style={{color:"#c084fc"}}>TRACKER</span>
+      </div>
+      <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,marginBottom:16}}>
+        Baseline: InBody 8 May 2026 · Start date: 16 May 2026
+      </div>
+
+      {/* Next InBody reminder */}
+      {nextInBody && (
+        <div style={{background:nextDays<=7?"rgba(232,255,71,.1)":"rgba(192,132,252,.06)",
+          border:`1px solid ${nextDays<=7?C.accent:"rgba(192,132,252,.3)"}`,
+          borderRadius:11,padding:"12px 14px",marginBottom:14}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:nextDays<=7?C.accent:"#c084fc",
+            textTransform:"uppercase",letterSpacing:".14em",marginBottom:4}}>
+            {nextDays===0?"TODAY":"Next InBody"} {nextDays>0?`in ${nextDays} days`:""}
+          </div>
+          <div style={{fontSize:13,color:C.text,fontWeight:600,marginBottom:3}}>
+            {formatDate(nextInBody)}
+          </div>
+          <div style={{fontSize:11,color:C.muted,lineHeight:1.5}}>
+            {nextDays<=3
+              ? "Time to book your InBody scan. Scan first thing in the morning, fasted, same conditions as baseline."
+              : "Scan every 4 weeks for meaningful data. Early morning, fasted, same gym, same time of day."}
+          </div>
+        </div>
+      )}
+
+      {/* Schedule strip */}
+      <div style={{marginBottom:16}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",
+          letterSpacing:".14em",marginBottom:8}}>InBody Schedule — Every 4 Weeks</div>
+        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+          {inBodyDates.map((d,i)=>{
+            const days=daysUntil(d);
+            const done=entries.some(e=>e.date===d.toISOString().split("T")[0]) || (i===0&&entries.length>0);
+            const isNext=d===nextInBody;
+            return (
+              <div key={i} style={{flexShrink:0,background:done?"rgba(106,255,71,.08)":isNext?"rgba(192,132,252,.1)":C.card,
+                border:`1px solid ${done?"rgba(106,255,71,.3)":isNext?"#c084fc":C.border}`,
+                borderRadius:10,padding:"10px 12px",minWidth:80,textAlign:"center"}}>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:done?"#6aff47":isNext?"#c084fc":C.muted,
+                  textTransform:"uppercase",marginBottom:3}}>Wk {i===0?"1":i*4+1}</div>
+                <div style={{fontSize:11,color:C.text,fontWeight:600,marginBottom:2}}>
+                  {d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}
+                </div>
+                <div style={{fontSize:9,color:done?"#6aff47":C.muted}}>
+                  {done?"✓ Done":days===0?"Today":days>0?`${days}d`:"Past"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Current vs Baseline */}
+      <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",
+        letterSpacing:".14em",marginBottom:8}}>
+        {latest?"Latest vs Baseline":"Baseline — 8 May 2026 (post-holidays)"}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:16}}>
+        {metrics.map(m=>{
+          const d=delta(m.key, m.invert);
+          const val=latest?latest[m.key]:baseline[m.key];
+          return (
+            <div key={m.key} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 10px"}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:C.muted,textTransform:"uppercase",
+                letterSpacing:".1em",marginBottom:3}}>{m.label}</div>
+              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:"#c084fc",lineHeight:1}}>
+                {val||"—"}
+              </div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:C.muted,marginBottom:d?4:0}}>{m.unit}</div>
+              {d&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:9,
+                color:m.neutral?"#fb923c":d.good?"#6aff47":"#ff6b6b",fontWeight:600}}>
+                {d.val>0?"+":""}{d.val.toFixed(1)}{m.unit}
+              </div>}
+              {!d&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:8,color:C.muted}}>baseline</div>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Entry history */}
+      {entries.length>0&&(
+        <>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",
+            letterSpacing:".14em",marginBottom:8}}>History</div>
+          {[BASELINE,...entries].map((e,i)=>(
+            <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:9,
+              padding:"9px 12px",marginBottom:5,display:"flex",alignItems:"center",gap:10}}>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#c084fc",marginBottom:3}}>
+                  {i===0?"BASELINE — ":""}{e.date}
+                </div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {[["⚖",e.weight,"kg"],["💪",e.smm,"kg SMM"],["📊",e.pbf,"%BF"],["🔥",e.score,"/100"]].map(([ic,v,u],j)=>
+                    v?<span key={j} style={{fontSize:11,color:C.text}}>{ic} {v}{u}</span>:null
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Log new entry */}
+      <div style={{marginTop:16,background:C.surface,border:"1px solid rgba(192,132,252,.3)",borderRadius:11,padding:"14px"}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#c084fc",textTransform:"uppercase",
+          letterSpacing:".14em",marginBottom:12}}>Log New InBody Entry</div>
+
+        <div style={{marginBottom:8}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4}}>Date</div>
+          <input type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}
+            style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:7,
+              padding:"8px 10px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:12,outline:"none"}}/>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          {[
+            {key:"weight",label:"Weight (kg)",ph:"60.6"},
+            {key:"smm",   label:"SMM (kg)",   ph:"28.6"},
+            {key:"pbf",   label:"Body Fat %", ph:"14.6"},
+            {key:"bmr",   label:"BMR (kcal)", ph:"1488"},
+            {key:"vfa",   label:"VFA (cm²)",  ph:"36.6"},
+            {key:"score", label:"InBody Score",ph:"86"},
+          ].map(({key,label,ph})=>(
+            <div key={key}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4}}>{label}</div>
+              <input type="number" inputMode="decimal" placeholder={ph}
+                value={form[key]||""}
+                onChange={e=>setForm(f=>({...f,[key]:e.target.value}))}
+                style={{width:"100%",background:C.card,border:`1px solid ${C.border}`,borderRadius:7,
+                  padding:"8px 8px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:13,
+                  outline:"none",textAlign:"center"}}/>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={saveEntry}
+          style={{width:"100%",padding:"13px",background:form.weight?"#c084fc":"rgba(192,132,252,.15)",
+            border:`1px solid ${form.weight?"#c084fc":"rgba(192,132,252,.3)"}`,borderRadius:10,
+            color:form.weight?"#0a0a0f":"#c084fc",fontFamily:"'Bebas Neue',sans-serif",fontSize:16,
+            letterSpacing:".08em",cursor:form.weight?"pointer":"default",transition:"all .2s"}}>
+          {saved2?"✓ SAVED":"SAVE INBODY ENTRY"}
+        </button>
+
+        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(192,132,252,.05)",
+          border:"1px solid rgba(192,132,252,.15)",borderRadius:8}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:"#c084fc",marginBottom:4}}>Scan tips for consistent data</div>
+          <div style={{fontSize:10,color:C.muted,lineHeight:1.6}}>
+            • Always first thing in the morning, fasted (no food or water since waking)<br/>
+            • Same time of day, same machine, same gym<br/>
+            • Empty bladder before scan<br/>
+            • No intense training the day before<br/>
+            • Week 4 of cycle can show +1–2kg water retention — note it, don't panic
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProgressView({allData,onNav}){
   const weeks=Array.from({length:12},(_,i)=>i+1);
   const days=["MON","TUE","WED","THU","FRI","SAT"];
