@@ -383,12 +383,16 @@ function App() {
     updateDayData({fins});
   }
 
-  function toggleSetDone(exId,si){
+  function toggleSetDone(exId,si,numSets){
     const exSets={...(dayData.exSets||{})};
     const arr=[...(exSets[exId]||[])];
     arr[si]={...(arr[si]||{}),done:!arr[si]?.done};
     exSets[exId]=arr;
-    updateDayData({exSets});
+    // Auto-mark exercise checkbox done when all sets are ticked
+    const allSetsDone=numSets>0&&arr.filter((_,i)=>i<numSets).every(s=>s&&s.done);
+    const done={...(dayData.done||{})};
+    if(allSetsDone) done[exId]=true;
+    updateDayData({exSets,done});
   }
   // Global history: for a given exId, scan ALL sessions newest-first for any saved sets
   function getLastSetsForEx(exId, exName) {
@@ -680,7 +684,7 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
                                   {Array.from({length:numSets},(_,si)=>{
                                     const cd=currentSets[si]||{};
                                     return (
-                                      <div key={si} onClick={()=>onToggleSetDone(ex.id,si)}
+                                      <div key={si} onClick={()=>onToggleSetDone(ex.id,si,numSets)}
                                         style={{width:36,height:36,borderRadius:8,border:`2px solid ${cd.done?C.accent:C.border}`,background:cd.done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",flexDirection:"column",gap:1}}>
                                         <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:cd.done?"#0a0a0f":C.muted,fontWeight:700}}>{si+1}</div>
                                         {cd.done&&<svg width="8" height="6" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -707,7 +711,7 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
                                       <input type="number" inputMode="numeric" placeholder={ld.reps?String(ld.reps):"reps"}
                                         value={cd.reps||(isPrefill?String(ld.reps||""):"")} onChange={e=>onSetData(ex.id,si,"reps",e.target.value)}
                                         style={{background:C.card,border:`1px solid ${cd.done?"rgba(232,255,71,.4)":isPrefill?"rgba(71,200,255,.25)":C.border}`,borderRadius:6,padding:"8px 6px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:14,outline:"none",width:"100%",textAlign:"center"}}/>
-                                      <div onClick={()=>onToggleSetDone(ex.id,si)}
+                                      <div onClick={()=>onToggleSetDone(ex.id,si,numSets)}
                                         style={{width:26,height:26,borderRadius:6,border:`2px solid ${cd.done?C.accent:C.border}`,background:cd.done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",margin:"0 auto"}}>
                                         {cd.done&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                                       </div>
@@ -1021,6 +1025,28 @@ function BodyView({allData, onSave}){
 function ProgressView({allData,onNav}){
   const weeks=Array.from({length:12},(_,i)=>i+1);
   const days=["MON","TUE","WED","THU","FRI","SAT"];
+  const [showBackup,setShowBackup]=useState(false);
+  const [restoreText,setRestoreText]=useState("");
+  const [restoreMsg,setRestoreMsg]=useState("");
+
+  function exportData(){
+    const json=JSON.stringify(allData);
+    // Copy to clipboard
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(json).then(()=>setRestoreMsg("Copied to clipboard!")).catch(()=>{});
+    }
+    setShowBackup(true);
+  }
+
+  function importData(){
+    try{
+      const parsed=JSON.parse(restoreText);
+      lsSave(parsed);
+      setRestoreMsg("Restored! Close and reopen the app.");
+    }catch(e){
+      setRestoreMsg("Invalid data — check you pasted the full text.");
+    }
+  }
   let totalDone=0;
   for(let w=1;w<=12;w++)for(let d=0;d<6;d++)if(allData[`w${w}-d${d}`]?.completed)totalDone++;
   const pct=Math.round((totalDone/72)*100);
@@ -1030,8 +1056,44 @@ function ProgressView({allData,onNav}){
       <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:36,letterSpacing:".04em",marginBottom:4}}>
         PROGRESS <span style={{color:C.accent}}>MAP</span>
       </div>
-      <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.muted,marginBottom:16}}>
+      <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:C.muted,marginBottom:12}}>
         {totalDone}/72 sessions · {pct}% complete
+      </div>
+
+      {/* Backup / Restore */}
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+        <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,textTransform:"uppercase",letterSpacing:".12em",marginBottom:8}}>Data Backup & Restore</div>
+        <div style={{display:"flex",gap:8,marginBottom:showBackup?10:0}}>
+          <button onClick={exportData}
+            style={{flex:1,padding:"9px",background:"rgba(232,255,71,.1)",border:"1px solid rgba(232,255,71,.3)",borderRadius:8,color:C.accent,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:".06em"}}>
+            EXPORT / BACKUP
+          </button>
+          <button onClick={()=>setShowBackup(b=>!b)}
+            style={{flex:1,padding:"9px",background:"rgba(71,200,255,.1)",border:"1px solid rgba(71,200,255,.3)",borderRadius:8,color:C.blue,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:".06em"}}>
+            RESTORE
+          </button>
+        </div>
+        {showBackup&&(
+          <div>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4}}>
+              Your data (copy all of this and save it somewhere safe):
+            </div>
+            <textarea readOnly value={JSON.stringify(allData)}
+              rows={4}
+              style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:7,padding:"8px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:9,outline:"none",resize:"none",marginBottom:8}}/>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:C.muted,marginBottom:4}}>
+              Paste backup data here to restore:
+            </div>
+            <textarea value={restoreText} onChange={e=>setRestoreText(e.target.value)}
+              rows={3} placeholder="Paste your backup data here..."
+              style={{width:"100%",background:C.surface,border:`1px solid ${C.border}`,borderRadius:7,padding:"8px",color:C.text,fontFamily:"'DM Mono',monospace",fontSize:9,outline:"none",resize:"none",marginBottom:8}}/>
+            <button onClick={importData}
+              style={{width:"100%",padding:"9px",background:restoreText?"rgba(71,200,255,.15)":"rgba(71,200,255,.05)",border:`1px solid ${restoreText?"rgba(71,200,255,.4)":"rgba(71,200,255,.15)"}`,borderRadius:8,color:C.blue,fontFamily:"'DM Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:".06em"}}>
+              RESTORE DATA
+            </button>
+            {restoreMsg&&<div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.accent,marginTop:6,textAlign:"center"}}>{restoreMsg}</div>}
+          </div>
+        )}
       </div>
 
       {/* Big progress bar */}
@@ -1102,10 +1164,10 @@ function ProgressView({allData,onNav}){
 // ─── FINISHER BLOCK ──────────────────────────────────────────────────────────
 function FinisherBlock({sec,secIdx,dayData,onFinData}){
   const [expandedItem,setExpandedItem]=useState(null);
-  const fins=dayData.fins||{};
+  // Always read fresh from dayData to avoid stale closure bug
   const key=`sec${secIdx}`;
-  const roundsDone=fins[key]||[];
-  const itemWeights=fins[key+"_w"]||{};  // {itemIdx: [{weight,reps},...rounds]}
+  const roundsDone=(dayData.fins||{})[key]||[];
+  const itemWeights=(dayData.fins||{})[key+"_w"]||{};
 
   function parseRounds(r){
     if(!r) return 2;
@@ -1116,13 +1178,14 @@ function FinisherBlock({sec,secIdx,dayData,onFinData}){
   const allRoundsDone=numRounds>0&&roundsDone.filter(Boolean).length===numRounds;
 
   function updateItemWeight(itemIdx,roundIdx,field,val){
-    const iw={...itemWeights};
+    const currentFins=dayData.fins||{};
+    const iw={...((currentFins[key+"_w"])||{})};
     const rounds=[...(iw[itemIdx]||[])];
     rounds[roundIdx]={...(rounds[roundIdx]||{}),[field]:val};
     iw[itemIdx]=rounds;
-    // Store in fins under a _w suffix key
-    const newFins={...fins,[key]:roundsDone,[key+"_w"]:iw};
-    onFinData(secIdx,-1,newFins);  // -1 signals a weight update
+    // Merge with current fins to avoid overwriting round ticks
+    const newFins={...currentFins,[key]:roundsDone,[key+"_w"]:iw};
+    onFinData(secIdx,-1,newFins);
   }
 
   return (
@@ -1194,7 +1257,7 @@ function FinisherBlock({sec,secIdx,dayData,onFinData}){
           {Array.from({length:numRounds},(_,ri)=>{
             const done=roundsDone[ri]||false;
             return (
-              <div key={ri} onClick={()=>onFinData(secIdx,ri)}
+              <div key={ri} onClick={()=>{ const cf=dayData.fins||{}; const rd=[...(cf[key]||[])]; rd[ri]=!rd[ri]; onFinData(secIdx,-1,{...cf,[key]:rd}); }}
                 style={{width:32,height:32,borderRadius:8,border:`2px solid ${done?C.accent:C.border}`,background:done?C.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all .15s",flexDirection:"column",gap:1}}>
                 <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,color:done?"#0a0a0f":C.muted,fontWeight:700}}>{ri+1}</div>
                 {done&&<svg width="8" height="6" viewBox="0 0 10 8" fill="none"><path d="M1 3.5L3.5 6.5L9 1" stroke="#0a0a0f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
@@ -1551,27 +1614,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 
 <script>
+// Kill ALL service workers and caches - forces fresh load every time
 if('serviceWorker' in navigator){
-  window.addEventListener('load', async () => {
-    // 1. Clear ALL caches immediately
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
-
-    // 2. Unregister all old service workers
-    const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(r => r.unregister()));
-
-    // 3. Register fresh
-    try {
-      const reg = await navigator.serviceWorker.register('./sw.js?v=6', {scope:'./'});
-      // Force update check immediately
-      await reg.update();
-      // Then check every 60s
-      setInterval(() => reg.update(), 60000);
-    } catch(err) {
-      console.warn('SW failed:', err);
-    }
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => r.unregister());
   });
+}
+if(window.caches){
+  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
 </script>
 </body>
