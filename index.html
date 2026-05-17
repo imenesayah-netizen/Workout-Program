@@ -1685,6 +1685,25 @@ function OfflineBar(){
 }
 
 // ─── MOUNT ────────────────────────────────────────────────────────────────────
+// Pre-seed localStorage with saved data if not already present
+(function(){
+  const SEED = {"w1-d0": {"done": {"mon-wu-1": true, "mon-wu-2": true, "mon-a1": true, "mon-a2": true, "mon-b1": true, "mon-b2": true, "mon-b3": true, "mon-c1": true, "mon-c2": true}, "exSets": {"mon-a1": [{"weight": "70", "reps": "5"}, {"weight": "70", "reps": "5"}, {"weight": "70", "reps": "5"}], "mon-a2": [{"weight": "25", "reps": "8"}, {"weight": "25", "reps": "8"}, {"weight": "25", "reps": "8"}], "mon-b1": [{"weight": "50", "reps": "10"}, {"weight": "50", "reps": "10"}, {"weight": "50", "reps": "10"}, {"weight": "50", "reps": "10"}], "mon-b2": [{"weight": "4", "reps": "15"}, {"weight": "4", "reps": "15"}, {"weight": "4", "reps": "15"}], "mon-b3": [{"weight": "16", "reps": "12"}, {"weight": "16", "reps": "12"}, {"weight": "16", "reps": "12"}]}, "fins": {"sec4": [true, true], "sec4_w": {"0": [{"weight": "12", "reps": "15"}, {"weight": "12", "reps": "15"}]}}, "completed": true, "completedAt": "2026-05-16T19:51:38.103Z"}, "__pos": {"week": 1, "dayIdx": 3}, "w1-d2": {"done": {"wed-wu-1": true, "wed-wu-2": true, "wed-a2": true, "wed-a1": true, "wed-a3": true, "wed-a4": true, "wed-b1": true}, "fins": {"sec3": [true, true, true]}, "completed": true, "completedAt": "2026-05-17T08:28:38.092Z"}};
+  const existing = localStorage.getItem('workout-programme-v1');
+  if (!existing || existing === '{}' || existing === 'null') {
+    localStorage.setItem('workout-programme-v1', JSON.stringify(SEED));
+    console.log('Pre-seeded workout data from build');
+  } else {
+    // Merge: add any missing keys from SEED into existing data
+    try {
+      const ex = JSON.parse(existing);
+      let changed = false;
+      Object.keys(SEED).forEach(k => {
+        if (!ex[k]) { ex[k] = SEED[k]; changed = true; }
+      });
+      if (changed) localStorage.setItem('workout-programme-v1', JSON.stringify(ex));
+    } catch(e) {}
+  }
+})();
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 
