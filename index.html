@@ -585,7 +585,7 @@ function App() {
       <div style={{maxWidth:640,margin:"0 auto",padding:"16px 16px calc(env(safe-area-inset-bottom) + 24px)"}}>
 
         {view==="progress" ? (
-          <ProgressView allData={allData} onNav={(w,d)=>{setCWeek(w);setCDayIdx(d);setView("workout");}}/>
+          <ProgressView allData={allData} onNav={(w,d)=>{setCWeek(w);setCDayIdx(d);setView("workout");}} onSave={(d)=>{const n={...allData,...d};setAllData(n);lsSave(n);}}/>
         ) : view==="nutrition" ? (
           <NutritionView/>
         ) : view==="body" ? (
@@ -1091,7 +1091,7 @@ function BodyView({allData, onSave}){
   );
 }
 
-function ProgressView({allData,onNav}){
+function ProgressView({allData,onNav,onSave}){
   const weeks=Array.from({length:12},(_,i)=>i+1);
   const days=["MON","TUE","WED","THU","FRI","SAT"];
   const [showBackup,setShowBackup]=useState(false);
@@ -1109,11 +1109,17 @@ function ProgressView({allData,onNav}){
 
   function importData(){
     try{
-      const parsed=JSON.parse(restoreText);
+      const trimmed=restoreText.trim();
+      const parsed=JSON.parse(trimmed);
+      // Save to localStorage
       lsSave(parsed);
-      setRestoreMsg("Restored! Close and reopen the app.");
+      // Also update React state immediately via onSave
+      onSave(parsed);
+      setRestoreMsg("✓ Restored successfully! Your data is back.");
+      setRestoreText("");
     }catch(e){
-      setRestoreMsg("Invalid data — check you pasted the full text.");
+      console.error("Restore error:",e);
+      setRestoreMsg("Error: " + e.message + " — make sure you pasted the complete text.");
     }
   }
   let totalDone=0;
