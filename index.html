@@ -392,8 +392,24 @@ function getDays(w) {
 }
 
 
-function lsLoad(){try{const r=localStorage.getItem(LS_KEY);return r?JSON.parse(r):{}}catch{return {}}}
-function lsSave(d){try{localStorage.setItem(LS_KEY,JSON.stringify(d))}catch(e){console.error(e)}}
+function lsLoad(){
+  try{
+    const r=localStorage.getItem(LS_KEY);
+    if(r&&r!=='null'){return JSON.parse(r);}
+    // fallback: sessionStorage
+    const s=sessionStorage.getItem(LS_KEY);
+    if(s&&s!=='null'){
+      try{localStorage.setItem(LS_KEY,s);}catch(e){}
+      return JSON.parse(s);
+    }
+    return {};
+  }catch(e){return {};}
+}
+function lsSave(d){
+  const json=JSON.stringify(d);
+  try{localStorage.setItem(LS_KEY,json);}catch(e){console.error('LS:',e);}
+  try{sessionStorage.setItem(LS_KEY,json);}catch(e){}
+}
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
 function App() {
@@ -542,6 +558,7 @@ function App() {
   return (
     <div style={{background:C.bg,minHeight:"100dvh",fontFamily:"'DM Sans',sans-serif",color:C.text}}>
       {toast && <div className="toast">{toast}</div>}
+      <PersistCheck/>
       <OfflineBar/>
 
       {/* TOP NAV */}
@@ -1669,6 +1686,28 @@ function NutritionView(){
 }
 
 // ─── OFFLINE BAR ─────────────────────────────────────────────────────────────
+function PersistCheck(){
+  const [warn, setWarn] = React.useState(false);
+  React.useEffect(()=>{
+    // Test if localStorage actually persists
+    try {
+      const testKey = '__persist_test__';
+      localStorage.setItem(testKey, '1');
+      const ok = localStorage.getItem(testKey) === '1';
+      localStorage.removeItem(testKey);
+      if (!ok) setWarn(true);
+    } catch(e) { setWarn(true); }
+  },[]);
+  if (!warn) return null;
+  return (
+    <div style={{position:'fixed',top:0,left:0,right:0,background:'#ff6b6b',color:'#0a0a0f',
+      padding:'8px 14px',fontFamily:"'DM Mono',monospace",fontSize:11,fontWeight:700,
+      zIndex:9999,textAlign:'center',paddingTop:'calc(8px + env(safe-area-inset-top))'}}>
+      ⚠ Storage not persisting — open from Home Screen icon, not Safari
+    </div>
+  );
+}
+
 function OfflineBar(){
   const [status,setStatus]=useState(navigator.onLine?"online":"offline");
   const [showBack,setShowBack]=useState(false);
