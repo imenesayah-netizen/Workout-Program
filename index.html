@@ -1708,14 +1708,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 
 <script>
-// Kill ALL service workers and caches - forces fresh load every time
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(r => r.unregister());
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {scope:'./'})
+      .catch(e => console.log('SW:', e));
   });
-}
-if(window.caches){
-  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
 }
 </script>
 </body>
