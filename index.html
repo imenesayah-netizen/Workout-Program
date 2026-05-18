@@ -392,23 +392,61 @@ function getDays(w) {
 }
 
 
-function lsLoad(){
-  try{
-    const r=localStorage.getItem(LS_KEY);
-    if(r&&r!=='null'){return JSON.parse(r);}
-    // fallback: sessionStorage
-    const s=sessionStorage.getItem(LS_KEY);
-    if(s&&s!=='null'){
-      try{localStorage.setItem(LS_KEY,s);}catch(e){}
-      return JSON.parse(s);
-    }
-    return {};
-  }catch(e){return {};}
+// ── IndexedDB storage (persists on iOS PWA) ──────────────────────────────────
+const DB_NAME = "WorkoutDB";
+const DB_STORE = "data";
+const DB_KEY = "main";
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e);
+  });
 }
-function lsSave(d){
-  const json=JSON.stringify(d);
-  try{localStorage.setItem(LS_KEY,json);}catch(e){console.error('LS:',e);}
-  try{sessionStorage.setItem(LS_KEY,json);}catch(e){}
+
+async function lsSaveAsync(d){
+  const json = JSON.stringify(d);
+  // Write to all available storage
+  try{ localStorage.setItem(LS_KEY, json); }catch(e){}
+  try{ sessionStorage.setItem(LS_KEY, json); }catch(e){}
+  try{
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE,"readwrite");
+    tx.objectStore(DB_STORE).put(json, DB_KEY);
+    await new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=rej;});
+  }catch(e){ console.error('IDB save failed:',e); }
+}
+
+async function lsLoadAsync(){
+  // Try IndexedDB first (most persistent on iOS)
+  try{
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE,"readonly");
+    const req = tx.objectStore(DB_STORE).get(DB_KEY);
+    const r = await new Promise((res,rej)=>{req.onsuccess=e=>res(e.target.result);req.onerror=rej;});
+    if(r && r !== 'null'){ return JSON.parse(r); }
+  }catch(e){ console.warn('IDB load failed, trying localStorage'); }
+  // Fallback to localStorage
+  try{
+    const r = localStorage.getItem(LS_KEY);
+    if(r && r !== 'null'){ return JSON.parse(r); }
+  }catch(e){}
+  // Fallback to sessionStorage
+  try{
+    const s = sessionStorage.getItem(LS_KEY);
+    if(s && s !== 'null'){ return JSON.parse(s); }
+  }catch(e){}
+  return {};
+}
+
+// Sync wrappers for compatibility
+function lsLoad(){ 
+  try{const r=localStorage.getItem(LS_KEY);return r&&r!=='null'?JSON.parse(r):{}}catch(e){return {};} 
+}
+function lsSave(d){ 
+  lsSaveAsync(d); // fire and forget async save to all storages
 }
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
@@ -422,9 +460,11 @@ function App() {
   const saveTimer = useRef(null);
 
   useEffect(()=>{
-    const d = lsLoad();
-    setAllData(d);
-    if(d.__pos){setCWeek(d.__pos.week||1);setCDayIdx(d.__pos.dayIdx??0);}
+    // Use async load to get from IndexedDB
+    lsLoadAsync().then(d => {
+      setAllData(d);
+      if(d.__pos){setCWeek(d.__pos.week||1);setCDayIdx(d.__pos.dayIdx??0);}
+    });
   },[]);
 
   const dayKey = `w${cWeek}-d${cDayIdx}`;
