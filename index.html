@@ -461,6 +461,12 @@ function getDays(w) {
 }
 
 
+// ── Storage constants ─────────────────────────────────────────────────────────
+const LS_KEY   = "workout-programme-v1";
+const DB_NAME  = "WorkoutDB";
+const DB_STORE = "data";
+const DB_KEY   = "main";
+
 function openDB(){
   return new Promise((resolve,reject)=>{
     const req = indexedDB.open(DB_NAME, 1);
@@ -557,7 +563,17 @@ function App() {
   const triggerSave = useCallback((newAll)=>{
     setSaveStatus("saving");
     if(saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(()=>{lsSave(newAll);setSaveStatus("saved");},600);
+    saveTimer.current = setTimeout(()=>{
+      lsSave(newAll);
+      setSaveStatus("saved");
+      // Auto-copy to clipboard as iCloud backup every save
+      try{
+        const json = JSON.stringify(newAll);
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(json).catch(()=>{});
+        }
+      }catch(e){}
+    },600);
   },[]);
 
   function updateDayData(patch){
@@ -699,7 +715,7 @@ function App() {
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:saveStatus==="saved"?C.accent:saveStatus==="saving"?"#fb923c":C.muted,display:"flex",alignItems:"center",gap:5}}>
               <div style={{width:5,height:5,borderRadius:"50%",background:saveStatus==="saved"?C.accent:saveStatus==="saving"?"#fb923c":C.muted,transition:"background .3s"}}/>
-              {saveStatus==="saving"?"Saving":saveStatus==="saved"?"Saved":""}
+              {saveStatus==="saving"?"Saving...":saveStatus==="saved"?"Saved — paste to Notes":"●"}
             </div>
             <div style={{display:"flex",gap:4}}>
               <button onClick={()=>setView(v=>v==="nutrition"?"workout":"nutrition")}
