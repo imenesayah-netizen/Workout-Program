@@ -470,6 +470,16 @@ function openDB(){
   });
 }
 
+// Request persistent storage from browser
+async function requestPersistence(){
+  if(navigator.storage && navigator.storage.persist){
+    const granted = await navigator.storage.persist();
+    console.log('Persistent storage:', granted ? 'granted' : 'denied');
+    return granted;
+  }
+  return false;
+}
+
 async function lsSaveAsync(d){
   const json = JSON.stringify(d);
   // Write to all available storage
@@ -509,8 +519,12 @@ async function lsLoadAsync(){
 function lsLoad(){ 
   try{const r=localStorage.getItem(LS_KEY);return r&&r!=='null'?JSON.parse(r):{}}catch(e){return {};} 
 }
-function lsSave(d){ 
-  lsSaveAsync(d); // fire and forget async save to all storages
+function lsSave(d){
+  // Synchronous save to localStorage immediately
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(d)); }catch(e){}
+  try{ sessionStorage.setItem(LS_KEY, JSON.stringify(d)); }catch(e){}
+  // Also async save to IndexedDB
+  lsSaveAsync(d);
 }
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
@@ -524,6 +538,10 @@ function App() {
   const saveTimer = useRef(null);
 
   useEffect(()=>{
+    // Request persistent storage first
+    requestPersistence().then(granted => {
+      console.log('Storage persistence:', granted);
+    });
     // Use async load to get from IndexedDB
     lsLoadAsync().then(d => {
       setAllData(d);
@@ -1792,6 +1810,24 @@ function NutritionView(){
 }
 
 // ─── OFFLINE BAR ─────────────────────────────────────────────────────────────
+// Force save before app closes
+window.addEventListener('beforeunload', () => {
+  try{
+    const data = localStorage.getItem(LS_KEY);
+    if(data) sessionStorage.setItem(LS_KEY, data);
+  }catch(e){}
+});
+
+// Also save on visibility change (when iOS switches app to background)
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden'){
+    try{
+      const data = localStorage.getItem(LS_KEY);
+      if(data) sessionStorage.setItem(LS_KEY, data);
+    }catch(e){}
+  }
+});
+
 function PersistCheck(){
   const [warn, setWarn] = React.useState(false);
   React.useEffect(()=>{
