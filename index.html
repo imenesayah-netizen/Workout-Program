@@ -139,246 +139,314 @@ function wNote(w){return PHASES[phOf(w)-1].weeks[w];}
 function getDays(w) {
   const p=phOf(w), note=wNote(w), puBand=note.pu;
 
-  // ── Set/rep schemes — scale across phases ─────────────────────────────────
-  const sqS   = p===1?"3x5" :p===2?"4x4":"4x3";
-  const dlS   = p===1?"4x3" :p===2?"4x3":"5x2";
-  const rdlS  = p===1?"3x10":p===2?"4x10":"4x8";
-  const htS   = p===1?"4x10":p===2?"4x12":"4x15";
-  const bssS  = p===1?"3x8" :p===2?"3x10":"4x10";
-  const suS   = p===1?"3x10":p===2?"3x12":"4x12";
-  const ckbS  = p===1?"3x12":p===2?"3x15":"4x15";
-  const abS   = p===1?"3x15":p===2?"4x15":"4x20";
-  const puS   = p===1?"3x6" :p===2?"4x6":"4x6";
-  const wgpuS = p===1?"3x8" :p===2?"4x8":"4x10";
-  const csrS  = p===1?"3x12":p===2?"4x12":"4x10";
-  const mrS   = p===1?"3x10":p===2?"3x12":"4x10";
-  const lrS   = p===1?"3x15":p===2?"4x15":"4x20";
-  const clrS  = p===1?"3x15":p===2?"4x15":"4x20";
-  const rdS   = p===1?"3x15":p===2?"4x15":"4x20";
-  const fpS   = p===1?"3x15":p===2?"4x15":"4x20";
-  const ohpS  = p===1?"3x5" :p===2?"4x5":"4x4";
-  const ppS   = p===1?"3x5" :p===2?"4x5":"4x4";
-  const tdlS  = p===1?"4x5" :p===2?"4x5":"4x4";
-  const hamS  = p===1?"3x10":p===2?"3x10":"4x10";
-  const gobS  = p===1?"3x8" :p===2?"3x10":"4x10";
+  // ── Set/rep schemes ───────────────────────────────────────────────────────
+  // STRENGTH: 4 sets, lower reps, 90s rest
+  // HYPERTROPHY: 3 sets, moderate reps, 60s rest
   const emom  = p===1?"16 min":p===2?"20 min":"24 min";
   const ftR   = p===1?"3 rounds":p===2?"4 rounds":"5 rounds";
   const intv  = p===1?"4x2 min hard":p===2?"5x2 min hard":"6x90s hard";
-  const amrp  = p===1?"8 min":p===2?"10 min":"12 min";
-  const finR  = p===1?"2 rounds":"3 rounds";
-  const coreA = p===1?"3x8" :p===2?"3x10":"4x10";
-  const coreB = p===1?"3x20s":p===2?"3x30s":"4x30s";
-  const coreC = p===1?"3x10":p===2?"3x12":"4x15";
+  const amrp  = p===1?"8 min":p===2?"8 min":"10 min";
 
-  // ── Phase-specific exercise names ─────────────────────────────────────────
-  // D1/D5 lower compound
-  const sqName  = p===1?"Back Squat":p===2?"Pause Back Squat":"Heel-elevated Back Squat";
-  const sqNote  = p===1?"Heavy compound":p===2?"2s pause at bottom · control the hole":"Heels on plates · deeper range · more quad+glute";
-  // D1 upper pull
-  const pullName = p===1?"Wide-Grip Lat Pulldown":p===2?"Chest-Supported DB Row":"Single-arm Cable Row";
-  const pullNote = p===1?"Elbows flared wide · pull to upper chest":p===2?"Chest on pad · wide elbow angle · upper back width":"Full rotation · elbow drives back · rear delt hit";
-  // D1 glute
-  const gluteName = p===1?"Barbell Hip Thrust":p===2?"Cable Kickback":"Banded Hip Thrust";
-  const gluteNote = p===1?"Full extension · squeeze hard at top":p===2?"Slight forward lean · squeeze glute at full extension":"Band above knees · full ROM · pause at top";
-  // D1 lat delt
-  const latName  = p===1?"DB Lateral Raise":p===2?"Cable Lateral Raise":"Seated DB Lateral Raise";
-  const latNote  = p===1?"Lead with elbow · slight forward tilt":p===2?"Constant tension · rear cable · slow eccentric 3s":"Seated removes momentum · strict form";
-  // D1 back width
-  const backName = p===1?"Chest-Supported DB Row":p===2?"Meadows Row":"Rear Delt Cable Fly";
-  const backNote = p===1?"Wide elbow angle · squeeze rear delts":p===2?"Elbow high and wide · upper back + rear delt":"Horizontal pull · constant cable tension";
-  // D2 main power
-  const d2Power  = p===1?"Conventional Deadlift":p===2?"Romanian Deadlift":"Trap Bar Deadlift";
-  const d2PNote  = p===1?"90%+ 1RM · explosive concentric":p===2?"Hip hinge focus · 3s eccentric · feel hamstring stretch":"Explosive · neutral spine · strong glute lockout";
-  // D2 quad
-  const d2Quad   = p===1?"Bulgarian Split Squat":p===2?"Heel-elevated Goblet Squat":"Step-Up (weighted)";
-  const d2QNote  = p===1?"Rear foot elevated · torso upright · deep stretch":p===2?"Heels on plate · deep squat · goblet hold":"Drive through heel · single-leg glute activation";
-  // D2 hamstring
-  const d2Ham    = p===1?"Romanian Deadlift":p===2?"Slider Hamstring Curl":"Lying Leg Curl";
-  const d2HNote  = p===1?"Hinge deep · feel hamstring tension":p===2?"Feet on slider · curl heels to glutes · slow eccentric":"Full ROM · squeeze at top";
-  // D4 press
-  const d4Press  = p===1?"Overhead Press (Barbell)":p===2?"Push Press":"Arnold Press";
-  const d4PNote  = p===1?"Strict · no leg drive":p===2?"Leg drive into lockout · power through sticking point":"Full rotation · front to overhead · shoulder health";
-  // D4 back
-  const d4Back   = p===1?"Meadows Row":p===2?"Chest-Supported DB Row":"Straight-arm Pulldown";
-  const d4BNote  = p===1?"Elbow high · upper back + rear delt":p===2?"Chest on pad · wide elbow":"Arms straight · lat focus · constant tension";
-  // D4 rear delt
-  const d4Rear   = p===1?"Rear Delt Fly (DB or cable)":p===2?"Face Pull":"Bent-over Reverse Fly";
-  const d4RNote  = p===1?"Slight bend in elbow · lead with elbow":p===2?"External rotation at top · cable face pull":"Horizontal pull · lead with elbows · squeeze";
-  // D5 lower complex
-  const d5Lower  = p===1?"Trap Bar Deadlift":p===2?"Hex Bar Deadlift":"Deadlift";
-  const d5LNote  = p===1?"Explosive concentric":p===2?"Drive legs through floor · max speed concentric":"Conventional · max effort · controlled down";
-  const d5Jump   = p===1?"Broad Jumps (after each set)":p===2?"Box Jump (after each set)":"DB Hang Clean (after each set)";
-  const d5JNote  = p===1?"Post-activation potentiation":p===2?"Stick the landing · absorb force":"Hip drive · shrug + pull · full extension";
-  // D5 upper complex pull
-  const d5Pull   = p===1?"Banded Pull-Ups (chest-to-bar aim)":p===2?"Banded Pull-Ups (pause at top)":"Banded Pull-Ups (slow eccentric 5s)";
-  // D5 AMRAP
-  const d5A1 = p===1?"DB Snatch (alternating)":p===2?"KB Swing":            "Barbell Thruster";
-  const d5A2 = p===1?"Bar-facing burpees":      p===2?"Box Jump":            "Pull-up attempt (unassisted or thin band)";
-  const d5A3 = p===1?"Goblet squat":            p===2?"Push-Up to DB Row":   "Reverse lunge";
-  // D6 skill
-  const d6S1 = p===1?"Wall walks or HS hold":   p===2?"HS hold":             "HS hold or walk attempts";
-  const d6S1n= p===1?"4x30s":                   p===2?"4x30s":               "4x30s";
-  const d6S2 = p===1?"Scapular pull-ups (dead hang shrug)":p===2?"Scapular pull-ups + band dead hangs":"Scapular pull-ups + negative pull-ups";
-  const d6S2n= p===1?"3x10 · No band needed":   p===2?"3x10 + 3x30s hang":  "3x10 + 3x5 negatives (jump up · lower 5–8s)";
-  const d6S3 = p===1?"L-sit hold":              p===2?"Toes-to-bar":         "Dragon flag (negative / tuck)";
-  const d6S3n= p===1?"3x15s · parallel bars":   p===2?"3x8":                 "3x5 · full anterior chain";
-  // D6 shoulder/glute
-  const d6Sh = p===1?"Single-arm cable lateral raise":p===2?"Upright row (cable)":"Face pull";
-  const d6Gl = p===1?"Banded hip abduction (seated)":p===2?"Cable Kickback":"Single-leg Hip Thrust";
-  // Conditioning
-  const wEmom1 = p===1?"Min 1: Burpee box jump-over":p===2?"Min 1: Devil press":           "Min 1: DB Devil press";
-  const wEmom2 = p===1?"Min 2: Row / ski erg":        p===2?"Min 2: Ski erg 200m":          "Min 2: Assault bike 15 cal";
-  const wEmom3 = p===1?"Min 3: DB Thrusters":         p===2?"Min 3: Wall balls":             "Min 3: DB Clean + press";
-  const wFT    = p===1?`${ftR}: 400m run + 12 wall balls`:p===2?`${ftR}: 400m run + 10 burpees`:`${ftR}: 400m run + 15 KB swings`;
-  // Core
-  const cAntiExt = p===1?"Dead Bug":                  p===2?"Hollow body rock":              "Ab wheel rollout";
-  const cAntiRot = p===1?"Pallof Press (cable)":      p===2?"Pallof Press hold (3s)":        "Pallof Press heavy";
-  const cLateral = p===1?"Side plank + hip dip":      p===2?"Side plank + rotation":         "Side plank + rotation (weighted)";
-  const cFlex    = p===1?"Cable crunch":               p===2?"Hanging knee raise":            "Hanging leg raise";
-  // D3 ab finisher
-  const abFin1 = p===1?"Cable crunch":                p===2?"Hanging knee raise":            "Hanging leg raise";
-  const abFin2 = p===1?"Hollow body hold":            p===2?"Hollow body rock":              "Dragon flag negative";
-  // Sat ab finisher
-  const satAb1 = p===1?"Hanging leg raise":           p===2?"Toes-to-bar":                   "Dragon flag (negative / tuck)";
-  const satAb2 = p===1?"Side plank + hip dip":        p===2?"Side plank + rotation":         "Side plank + rotation (weighted)";
+  // Phase-specific exercise definitions
+  // ── D1 ────────────────────────────────────────────────────────────────────
+  const d1SqName = p===1?"Back Squat":p===2?"Pause Back Squat":"Heel-elevated Back Squat";
+  const d1SqNote = p===1?"Heavy compound · superset with row":p===2?"2s pause at bottom · control the hole · superset with row":"Heels on plates · deeper ROM · more quad+glute · superset with row";
+  const d1SqS    = p===1?"3x5":p===2?"4x4":"4x4";
+  const d1RowName= p===1?"Wide-Grip Lat Pulldown":p===2?"Chest-Supported DB Row":"Single-arm Cable Row";
+  const d1RowNote= p===1?"Elbows flared wide · pull to upper chest":p===2?"Chest on pad · wide elbow · upper back width":"Full rotation · elbow drives back · rear delt hit";
+  const d1RowS   = p===1?"3x8":p===2?"4x8":"4x8";
+  const d1GluteName = p===1?"Barbell Hip Thrust":p===2?"DB Hip Thrust":"Cable Hip Extension";
+  const d1GluteNote = p===1?"Full extension · squeeze hard at top":p===2?"Dumbbells on hips · full extension · squeeze":"Cable through legs · constant tension · glute focus";
+  const d1GluteS = "3x12";
+  const d1BicepName = p===1?null:p===2?"Incline DB Curl":"Cable Curl";
+  const d1BicepNote = p===2?"Full ROM · slow 3s eccentric · no swinging":"Constant tension · squeeze at top";
+  const d1TricepName = p===1?null:p===2?"Cable Tricep Pushdown":"Overhead Cable Extension";
+  const d1TricepNote = p===2?"Elbows fixed · full extension · slow return":"Elbows fixed overhead · full stretch at bottom";
+  const d1HamName = p===1?null:p===2?"Cable Pull-through":"Stiff-leg Deadlift";
+  const d1HamNote = p===2?"Hip hinge · glute + hamstring · squeeze at top":"Straight legs · deep hamstring stretch · controlled";
+  const d1CoreA  = p===1?"Dead Bug":p===2?"Hollow body rock":"Bear crawl";
+  const d1CoreAs = p===1?"3x8":p===2?"3x10":"3x20m";
+  const d1CoreAn = p===1?"Lower back pressed flat · opposite arm/leg":p===2?"Full body tension · controlled rock":"Shoulders packed · knees 1cm off floor";
+  const d1CoreB  = p===1?"Pallof Press (cable)":p===2?"Side plank + hip dip":"L-sit hold";
+  const d1CoreBs = p===1?"3x20s":p===2?"3x20s/side":"3x20s";
+  const d1CoreBn = p===1?"Anti-rotation · resist the pull · each side":p===2?"Lateral core · controlled dips":"Parallel bars or floor · full tension";
+  const d1FinName1 = p===1?"KB Swings (glute drive)":p===2?"Assault bike":"Assault bike";
+  const d1FinVal1  = p===1?"15 reps":p===2?"30s max":"30s max";
+  const d1FinName2 = p===1?"Cable lateral raise":p===2?"Jump squat":"KB Swing";
+  const d1FinVal2  = p===1?"12/side":p===2?"10 reps":"15 reps";
+  const d1FinName3 = p===1?"Banded glute bridge":p===2?"Lateral band walks":"Jump squat";
+  const d1FinVal3  = p===1?"20 reps":p===2?"20 steps each way":"12 reps";
 
-  // ── D4 shoulder health finisher changes per phase ─────────────────────────
-  const shouFin = p===1
-    ? [{n:"Face pull w/ ext. rotation",v:"3x20"},{n:"Upright row (cable)",v:"3x15"},{n:"Hollow body rock",v:"10 reps"},{n:"Side plank + hip dip",v:"20s+10 dips/side"}]
-    : p===2
-    ? [{n:"Band Y-raise",v:"3x15"},{n:"Cable upright row",v:"3x15"},{n:"Hollow body rock",v:"3x12"},{n:"Side plank + rotation",v:"3x20s/side"}]
-    : [{n:"Cable Y-T-W",v:"3x10 each"},{n:"Face pull heavy",v:"3x15"},{n:"Hollow body rock",v:"4x12"},{n:"Side plank + rotation (weighted)",v:"4x20s/side"}];
+  // ── D2 ────────────────────────────────────────────────────────────────────
+  const d2PowerName = p===1?"Conventional Deadlift":p===2?"Sumo Deadlift":"Deficit Deadlift";
+  const d2PowerNote = p===1?"90%+ 1RM · explosive concentric":p===2?"Wide stance · glute drive · knees out":"Stand on plate · greater ROM · glute + hamstring";
+  const d2PowerS    = p===1?"4x3":p===2?"4x4":"4x4";
+  const d2QuadName  = p===1?"Bulgarian Split Squat":p===2?"Heel-elevated Goblet Squat":"Step-Up (weighted)";
+  const d2QuadNote  = p===1?"Rear foot elevated · torso upright · deep stretch":p===2?"Heels on plate · deep squat · goblet hold":"Drive through heel · single-leg glute activation";
+  const d2QuadS     = p===1?"3x8":p===2?"3x10":"3x12/side";
+  const d2HamName   = p===1?"Romanian Deadlift":p===2?"Good Morning":"Stiff-leg Deadlift";
+  const d2HamNote   = p===1?"Hinge deep · feel hamstring tension · no rounding":p===2?"Bar on back · hinge at hip · deep hamstring stretch":"Straight legs · barbell or DB · deep stretch";
+  const d2HamS      = p===1?"3x10":p===2?"3x10":"3x10";
+  const d2CalfName  = p===1?null:p===2?"Standing Calf Raise":"Single-leg Calf Raise";
+  const d2CalfNote  = p===2?"Full ROM · pause at top · controlled down":"Single leg · pause at top · more challenging";
+  const d2CalfS     = p===2?"3x15":"3x15/side";
+  const d2FinName1  = p===1?"Lateral band walks":p===2?"Assault bike":"Assault bike";
+  const d2FinVal1   = p===1?"20 steps each way":p===2?"30s max":"30s max";
+  const d2FinName2  = p===1?"Frog pumps":p===2?"Jump squat":"Jump squat";
+  const d2FinVal2   = p===1?"25 reps":p===2?"10 reps":"12 reps";
+  const d2FinName3  = p===1?"Sumo squat pulse":p===2?"Lateral band walks":"Lateral band walks";
+  const d2FinVal3   = p===1?"20 reps":p===2?"20 steps each way":"25 steps each way";
+
+  // ── D3 conditioning exercises ─────────────────────────────────────────────
+  const d3Emom1 = p===1?"Min 1: Burpee box jump-over":p===2?"Min 1: Devil press":"Min 1: Devil press (heavier)";
+  const d3Emom2 = p===1?"Min 2: Row / ski erg":p===2?"Min 2: Ski erg 200m":"Min 2: Assault bike 15 cal";
+  const d3Emom3 = p===1?"Min 3: DB Thrusters":p===2?"Min 3: Wall balls":"Min 3: DB Clean + press";
+  const d3FT    = p===1?`${ftR}: 400m run + 12 wall balls`:p===2?`${ftR}: 400m run + 10 burpees`:`${ftR}: 400m run + 15 KB swings`;
+  const d3Ab1   = p===1?"Cable crunch":p===2?"Cable crunch":"Hanging leg raise";
+  const d3Ab2   = p===1?"Hollow body hold":p===2?"Oblique crunch (each side)":"Dragon flag negative";
+  const d3Ab3   = p===1?"Oblique crunch (each side)":p===2?"Hollow hold":"Woodchop (cable)";
+
+  // ── D4 ────────────────────────────────────────────────────────────────────
+  const d4PressName = p===1?"Overhead Press (Barbell)":p===2?"Push Press":"Arnold Press";
+  const d4PressNote = p===1?"Strict · no leg drive · superset with pull-ups":p===2?"Leg drive into lockout · superset with pull-ups":"Full rotation front to overhead · superset with pull-ups";
+  const d4PressS    = p===1?"3x5":p===2?"4x5":"4x6";
+  const d4PuS       = p===1?"3x6":p===2?"4x6":"4x6";
+  const d4PuNote    = p===1?"Thick band · full ROM":p===2?"Medium band · pause 1s at top":"Thin band · 5s eccentric on the way down";
+  const d4Row1Name  = p===1?"Cable Lateral Raise":p===2?"Wide-grip Seated Cable Row":"Straight-arm Pulldown";
+  const d4Row1Note  = p===1?"Single arm · constant tension · slow 3s eccentric":p===2?"Elbows wide · upper back width · drive elbows back":"Arms straight · lat focus · constant tension";
+  const d4Row1S     = p===1?"3x15":p===2?"3x12":"3x12";
+  const d4Row2Name  = p===1?"Meadows Row":p===2?"Single-arm DB Row":"Meadows Row";
+  const d4Row2Note  = p===1?"Elbow high and wide · upper back + rear delt":p===2?"Elbow drives back · full ROM · no rotation":"Elbow high · explosive pull · upper back";
+  const d4Row2S     = p===1?"3x10":p===2?"3x10/side":"3x10/side";
+  const d4RearName  = p===1?"Rear Delt Fly (DB or cable)":p===2?"Concentration Curl":"Cross-body Hammer Curl";
+  const d4RearNote  = p===1?"Slight bend in elbow · lead with elbow · squeeze":p===2?"Full ROM · peak squeeze · no swinging":"Cross body · targets brachialis + bicep";
+  const d4RearS     = p===1?"3x15":p===2?"3x12/side":"3x12/side";
+  const d4Tri1Name  = p===1?null:p===2?"Overhead Cable Extension":"DB Skull Crusher";
+  const d4Tri1Note  = p===2?"Elbows fixed · full stretch at bottom · squeeze":"Elbows fixed · lower to forehead · no bar";
+  const d4Tri1S     = "3x12";
+  const d4CoreA     = p===1?"Dead bug":p===2?"Bear crawl":"V-up";
+  const d4CoreAs    = p===1?"3x8":p===2?"3x20m":"3x12";
+  const d4CoreB     = p===1?"Hollow body rock":p===2?"Plank up-down":"Plank with reach";
+  const d4CoreBs    = p===1?"3x10":p===2?"3x10":"3x10/side";
+  const d4ShouName  = p===1?"Face pull w/ ext. rotation":p===2?"Cable Lateral Raise":"Leaning Cable Lateral Raise";
+  const d4ShouNote  = p===1?"External rotation · cable face pull":p===2?"1 set each side · constant tension":"Lean away from cable · better line of pull";
+
+  // ── D5 ────────────────────────────────────────────────────────────────────
+  const d5LowerName = p===1?"Trap Bar Deadlift":p===2?"RDL":"Deadlift (Conventional)";
+  const d5LowerNote = p===1?"Explosive concentric · strong glute lockout":p===2?"Hip hinge · hamstring focus · 4 sets":"Max effort · conventional · strong glute lockout";
+  const d5LowerS    = p===1?"4x5":p===2?"4x5":"4x4";
+  const d5JumpName  = p===1?"Broad Jumps (after each set)":p===2?"Box Jump (after each set)":"DB Hang Clean (after each set)";
+  const d5JumpNote  = p===1?"Post-activation potentiation":p===2?"Stick the landing · absorb force":"Hip drive · shrug + pull · explosive";
+  const d5PullName  = p===1?"Push Press":p===2?"Weighted Dip":"DB Push Press";
+  const d5PullNote  = p===1?"Leg drive into lockout":p===2?"Full ROM · control the descent":"Dumbbells · leg drive into lockout";
+  const d5PullS     = p===1?"3x5":p===2?"4x6":"4x6";
+  const d5BpuS      = p===1?"3x6":p===2?"4x6":"4x6";
+  const d5BpuName   = p===1?"Banded Pull-Ups (chest-to-bar aim)":p===2?"Banded Pull-Ups (pause at top)":"Banded Pull-Ups (slow eccentric 5s)";
+  const d5CalfName  = p===1?null:p===2?"Seated Calf Raise":"Standing Calf Raise (heavy)";
+  const d5CalfNote  = p===2?"Full ROM · pause at top":"More load than P2 · full ROM";
+  const d5CalfS     = "3x15";
+  const d5RowName   = p===1?null:p===2?"Landmine Row":"T-bar Row";
+  const d5RowNote   = p===2?"Explosive pull · elbow drives back · each side":"Both hands · chest pad if available · lat focus";
+  const d5RowS      = p===2?"3x10/side":"3x10";
+  const d5Fin1      = p===1?"DB Snatch (alternating)":p===2?"Ski erg":"Ski erg";
+  const d5Fin1v     = p===1?"8 reps":p===2?"30s max":"30s max";
+  const d5Fin2      = p===1?"Bar-facing burpees":p===2?"Box jump":"DB Hang Clean";
+  const d5Fin2v     = p===1?"5 reps":p===2?"8 reps":"6 reps";
+  const d5Fin3      = p===1?"Goblet squat":p===2?"KB Swing":"KB Swing";
+  const d5Fin3v     = p===1?"10 reps":p===2?"15 reps":"15 reps";
+
+  // ── D6 ────────────────────────────────────────────────────────────────────
+  const d6RunTime   = p===1?"13 min":p===2?"15 min":"18 min";
+  const d6RunNote   = p===1?"65–70% MHR · nasal breathing":p===2?"65–70% MHR · build to 75% last 3 min":"Zone 2–3 · push slightly harder";
+  const d6Skill1    = p===1?"Wall walks or HS hold":p===2?"HS hold":"HS walk attempts";
+  const d6Skill1s   = "4x30s";
+  const d6Skill2    = p===1?"Scapular pull-ups (dead hang shrug)":p===2?"Scap pull-ups + band dead hangs":"Scap pull-ups + negative pull-ups";
+  const d6Skill2s   = p===1?"3x10":p===2?"3x10 + 3x30s hang":"3x10 + 3x5 negatives";
+  const d6Skill2n   = p===1?"No band needed · builds pull-up strength":p===2?"Dead hang builds grip + scap strength":"Jump to top · lower 5–8s slowly · builds pull-up strength";
+  const d6Skill3    = p===1?"L-sit hold":p===2?"Toes-to-bar":"Dragon flag negative";
+  const d6Skill3s   = p===1?"3x15s":p===2?"3x8":"3x5";
+  const d6CalfName  = p===1?null:p===2?"Single-leg calf raise (BW)":"Single-leg calf raise (weighted)";
+  const d6CalfS     = "3x15/side";
+  const d6Ab1       = p===1?"Hanging leg raise":p===2?"Hanging knee raise":"Hanging leg raise";
+  const d6Ab2       = p===1?"Side plank + hip dip":p===2?"Side plank + rotation":"Side plank + rotation (weighted)";
+  const d6Ab3       = p===1?"Dragon flag (negative / tuck)":p===2?"Hollow rock":"Dragon flag";
 
   return [
     // ── D1: Hybrid Strength ───────────────────────────────────────────────────
-    {num:"D1",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · add banana/dates pre-workout on heavy days",name:"Hybrid Strength",title:"Hybrid Strength",tag:"hybrid",dur:"55 min",int:85,ic:"#e8ff47",secs:[
+    {num:"D1",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · add banana/dates pre-workout on heavy days",
+     name:"Hybrid Strength",title:"Hybrid Strength",tag:"hybrid",dur:"60 min",int:85,ic:"#e8ff47",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"mon-wu-1",ic:"🔥",n:"Row erg easy",s:"3 min",note:"Gradual HR build",noWeight:true},
         {id:"mon-wu-2",ic:"🔄",n:"Banded pull-aparts + hip circles",s:"2x10 each",note:"",noWeight:true},
       ]},
-      {lbl:"Strength — 20 min",exs:[
-        {id:"mon-a1",ic:"🏋️",n:sqName,s:sqS,note:sqNote},
-        {id:"mon-a2",ic:"🔙",n:pullName,s:wgpuS,note:pullNote},
+      {lbl:"Strength Superset — 20 min",exs:[
+        {id:"mon-a1",ic:"🏋️",n:d1SqName,s:d1SqS,note:d1SqNote},
+        {id:"mon-a2",ic:"🔙",n:d1RowName,s:d1RowS,note:d1RowNote},
       ]},
-      {lbl:"Hypertrophy — 18 min",exs:[
-        {id:"mon-b1",ic:"🍑",n:gluteName,s:htS,note:gluteNote},
-        {id:"mon-b2",ic:"💪",n:latName,s:lrS,note:latNote},
-        {id:"mon-b3",ic:"🔙",n:backName,s:csrS,note:backNote},
+      {lbl:"Hypertrophy A — 12 min",exs:[
+        {id:"mon-b1",ic:"🍑",n:d1GluteName,s:d1GluteS,note:d1GluteNote},
+        ...(d1BicepName?[{id:"mon-b2",ic:"💪",n:d1BicepName,s:"3x12",note:d1BicepNote}]:[
+          {id:"mon-b2",ic:"💪",n:"DB Lateral Raise",s:"3x15",note:"Lead with elbow · slight forward tilt · control eccentric"}
+        ]),
       ]},
-      {lbl:"Core Superset — 8 min",exs:[
-        {id:"mon-c1",ic:"🎯",n:cAntiExt,s:coreA,note:"Lower back pressed flat · breathe out on extend",noWeight:true},
-        {id:"mon-c2",ic:"🎯",n:cAntiRot,s:coreB,note:"Anti-rotation · resist the pull · each side"},
+      {lbl:"Hypertrophy B — 12 min",exs:[
+        ...(d1TricepName?[{id:"mon-b3",ic:"💪",n:d1TricepName,s:"3x12",note:d1TricepNote}]:[
+          {id:"mon-b3",ic:"🔙",n:"Chest-Supported DB Row",s:"3x12",note:"Wide elbow angle · squeeze rear delts · upper back width"}
+        ]),
+        ...(d1HamName?[{id:"mon-c1",ic:"🦵",n:d1HamName,s:"3x12",note:d1HamNote}]:[
+          {id:"mon-c1",ic:"🎯",n:"Dead Bug",s:"3x8",note:"Lower back pressed flat · breathe out on extend",noWeight:true}
+        ]),
       ]},
-      {lbl:`Finisher — ${finR}`,fin:true,trackable:true,rounds:finR,cs:[
-        {n:"KB Swings (glute drive)",v:"15 reps"},
-        {n:"Cable lateral raise",v:"12/side",weighted:true},
-        {n:"Banded glute bridge",v:"20 reps"},
-        {n:"Rest",v:"60s"},
+      {lbl:"Core — 5 min",exs:[
+        {id:"mon-c2",ic:"🎯",n:d1CoreA,s:d1CoreAs,note:d1CoreAn,noWeight:true},
+        {id:"mon-d1",ic:"🎯",n:d1CoreB,s:d1CoreBs,note:d1CoreBn,noWeight:true},
+      ]},
+      {lbl:"Finisher — 2 rounds",fin:true,trackable:true,rounds:"2 rounds",cs:[
+        {n:d1FinName1,v:d1FinVal1},
+        {n:d1FinName2,v:d1FinVal2,weighted:p!==1},
+        {n:d1FinName3,v:d1FinVal3},
+        {n:"Rest",v:"45s"},
       ]},
     ]},
 
     // ── D2: Lower Body — Glutes ───────────────────────────────────────────────
-    {num:"D2",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · post-workout oat bowl within 60 min",name:"Lower Body — Glutes",title:"Lower Body — Glutes",tag:"lower",dur:"55 min",int:90,ic:"#c084fc",secs:[
+    {num:"D2",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · post-workout oat bowl within 60 min",
+     name:"Lower Body — Glutes",title:"Lower Body — Glutes",tag:"lower",dur:"57 min",int:90,ic:"#c084fc",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"tue-wu-1",ic:"🍑",n:"Banded clamshells + glute bridges",s:"2x15 each",note:"Activate glutes before loading",noWeight:true},
         {id:"tue-wu-2",ic:"⚡",n:"Hip flexor stretch + leg swings",s:"90s/side",note:"",noWeight:true},
       ]},
-      {lbl:"Main Power — 20 min",exs:[
-        {id:"tue-a1",ic:"🏋️",n:d2Power,s:dlS,note:d2PNote},
-        {id:"tue-a2",ic:"🦵",n:d2Quad,s:bssS,note:d2QNote},
+      {lbl:"Strength — 15 min",exs:[
+        {id:"tue-a1",ic:"🏋️",n:d2PowerName,s:d2PowerS,note:d2PowerNote},
       ]},
-      {lbl:"Glute Accessory — 20 min",exs:[
-        {id:"tue-b1",ic:"🍑",n:"Single-Leg Hip Thrust",s:htS,note:"Full ROM · 2s pause at top · isolates each glute"},
-        {id:"tue-b2",ic:"🦵",n:d2Ham,s:hamS,note:d2HNote},
-        {id:"tue-b3",ic:"🍑",n:"Cable Kickback",s:ckbS,note:"Slight forward lean · squeeze glute at full extension"},
+      {lbl:"Hypertrophy A — 15 min",exs:[
+        {id:"tue-a2",ic:"🦵",n:d2QuadName,s:d2QuadS,note:d2QuadNote},
+        {id:"tue-b1",ic:"🦵",n:d2HamName,s:d2HamS,note:d2HamNote},
+      ]},
+      {lbl:"Hypertrophy B — 12 min",exs:[
+        {id:"tue-b2",ic:"🍑",n:"Cable Kickback",s:"3x15",note:"Slight forward lean · squeeze glute at full extension"},
+        ...(d2CalfName?[{id:"tue-b3",ic:"🦵",n:d2CalfName,s:d2CalfS,note:d2CalfNote}]:[
+          {id:"tue-b3",ic:"🍑",n:"Single-Leg Hip Thrust",s:"3x12",note:"Full ROM · 2s pause at top"}
+        ]),
+      ]},
+      {lbl:"Core — 5 min",exs:[
+        {id:"tue-c1",ic:"🎯",n:p===1?"Hollow body hold":p===2?"Hanging knee raise":"Hanging leg raise",s:p===1?"3x20s":"3x10",note:p===1?"Full body tension":p===2?"Controlled · no swing":"Straight legs · controlled",noWeight:true},
+        {id:"tue-c2",ic:"🎯",n:p===1?"Side plank + hip dip":p===2?"Woodchop (cable)":"Woodchop (cable heavy)",s:p===1?"3x20s/side":p===2?"3x12/side":"3x12/side",note:p===1?"Lateral core":p===2?"Rotational core · cable":"More load · rotational core",noWeight:p===1},
       ]},
       {lbl:"Finisher — 2 rounds",fin:true,trackable:true,rounds:"2 rounds",cs:[
-        {n:"Lateral band walks",v:"20 steps each way"},
-        {n:"Frog pumps",v:"25 reps"},
-        {n:p===1?"Sumo squat pulse":p===2?"Banded glute bridge hold":"Single-leg glute bridge",v:"20 reps"},
+        {n:d2FinName1,v:d2FinVal1},
+        {n:d2FinName2,v:d2FinVal2},
+        {n:d2FinName3,v:d2FinVal3},
         {n:"Rest",v:"45s"},
       ]},
     ]},
 
     // ── D3: Metabolic Conditioning ────────────────────────────────────────────
-    {num:"D3",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · run counts as steps",name:"Metabolic Conditioning",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
+    {num:"D3",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · run counts as steps",
+     name:"Metabolic Conditioning",title:"Metabolic Conditioning",tag:"cond",dur:"50 min",int:88,ic:"#47c8ff",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"wed-wu-1",ic:"🏃",n:"400m easy jog or row",s:"1x",note:"",noWeight:true},
         {id:"wed-wu-2",ic:"🔄",n:"Dynamic mobility",s:"3 min",note:"Inchworms, hip hinges, arm swings",noWeight:true},
       ]},
       {lbl:`EMOM — ${emom}`,exs:[
-        {id:"wed-a1",ic:"⏱️",n:wEmom1,s:"8 reps",note:"",noWeight:true},
-        {id:"wed-a2",ic:"⏱️",n:wEmom2,s:"200m",note:"",noWeight:true},
-        {id:"wed-a3",ic:"⏱️",n:wEmom3,s:"10 reps",note:"Moderate load"},
+        {id:"wed-a1",ic:"⏱️",n:d3Emom1,s:"8 reps",note:"",noWeight:true},
+        {id:"wed-a2",ic:"⏱️",n:d3Emom2,s:p===3?"15 cal":"200m",note:"",noWeight:true},
+        {id:"wed-a3",ic:"⏱️",n:d3Emom3,s:"10 reps",note:"Moderate load"},
         {id:"wed-a4",ic:"⏱️",n:"Min 4: Active rest",s:"—",note:"Walk + breathe",noWeight:true},
       ]},
       {lbl:"For Time — 20 min cap",exs:[
-        {id:"wed-b1",ic:"🏃",n:wFT,s:"For time",note:"Pace conservatively on round 1",noWeight:true},
+        {id:"wed-b1",ic:"🏃",n:d3FT,s:"For time",note:"Pace conservatively on round 1",noWeight:true},
       ]},
       {lbl:"Ab Finisher — 5 min",fin:true,trackable:true,rounds:"3 rounds",cs:[
-        {n:abFin1,v:"15 reps"},
-        {n:abFin2,v:"20s"},
-        {n:"Oblique crunch (each side)",v:"12 reps"},
+        {n:d3Ab1,v:"15 reps",weighted:p!==1},
+        {n:d3Ab2,v:p===3?"5 reps":"12 reps"},
+        {n:d3Ab3,v:"20s"},
         {n:"Rest",v:"30s"},
       ]},
     ]},
 
-    // ── D4: Upper Body — Delts & Back Width ──────────────────────────────────
-    {num:"D4",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · prioritise omega-3 fat sources",name:"Upper Body — Delts & Back Width",title:"Upper Body — Delts & Back Width",tag:"upper",dur:"55 min",int:82,ic:"#fb923c",secs:[
+    // ── D4: Upper Body ────────────────────────────────────────────────────────
+    {num:"D4",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · prioritise omega-3 fat sources",
+     name:"Upper Body — Delts & Back Width",title:"Upper Body — Delts & Back Width",tag:"upper",dur:"58 min",int:82,ic:"#fb923c",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
-        {id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"3x15",note:"Rear delt primer",noWeight:true},
-        {id:"thu-wu-2",ic:"🤸",n:"Scap pull-ups + face pulls",s:"2x10",note:"Warm up the entire upper back",noWeight:true},
+        {id:"thu-wu-1",ic:"🔄",n:"Band pull-aparts",s:"2x15",note:"Rear delt primer",noWeight:true},
+        {id:"thu-wu-2",ic:"🤸",n:"Scap pull-ups + face pulls",s:"2x10",note:"Warm up entire upper back",noWeight:true},
       ]},
-      {lbl:"Press + Pull Superset A — 18 min",exs:[
-        {id:"thu-a1",ic:"💪",n:d4Press,s:ohpS,note:`${d4PNote} · superset with pull-ups`},
-        {id:"thu-a2",ic:"🔵",n:"Banded Pull-Ups",s:puS,note:"",banded:true},
+      {lbl:"Strength Superset — 18 min",exs:[
+        {id:"thu-a1",ic:"💪",n:d4PressName,s:d4PressS,note:d4PressNote},
+        {id:"thu-a2",ic:"🔵",n:`Banded Pull-Ups${p===2?" (medium band · pause 1s at top)":p===3?" (thin band · 5s eccentric)":""}`,s:d4PuS,note:d4PuNote,banded:true},
       ]},
-      {lbl:"Lateral Delt + Back Width — 20 min",exs:[
-        {id:"thu-b1",ic:"💪",n:"Cable Lateral Raise",s:clrS,note:"Single arm · constant tension · slow eccentric 3s"},
-        {id:"thu-b2",ic:"🔙",n:d4Back,s:mrS,note:d4BNote},
-        {id:"thu-b3",ic:"🔙",n:d4Rear,s:rdS,note:d4RNote},
+      {lbl:"Hypertrophy A — Back Width — 15 min",exs:[
+        {id:"thu-b1",ic:"🔙",n:d4Row1Name,s:d4Row1S,note:d4Row1Note},
+        {id:"thu-b2",ic:"🔙",n:d4Row2Name,s:d4Row2S,note:d4Row2Note},
       ]},
-      {lbl:"Shoulder Health + Core — 12 min",fin:true,trackable:true,rounds:"3 rounds",cs:shouFin},
+      {lbl:"Hypertrophy B — Arms — 10 min",exs:[
+        {id:"thu-b3",ic:"💪",n:d4RearName,s:d4RearS,note:d4RearNote},
+        ...(d4Tri1Name?[{id:"thu-c1",ic:"💪",n:d4Tri1Name,s:d4Tri1S,note:d4Tri1Note}]:[]),
+      ]},
+      {lbl:"Core — 5 min",exs:[
+        {id:"thu-c2",ic:"🎯",n:d4CoreA,s:d4CoreAs,note:"",noWeight:true},
+        {id:"thu-c3",ic:"🎯",n:d4CoreB,s:d4CoreBs,note:"",noWeight:true},
+      ]},
+      {lbl:"Shoulder Health — 3 min",exs:[
+        {id:"thu-d1",ic:"💪",n:d4ShouName,s:"2x15",note:d4ShouNote},
+      ]},
+      {lbl:"Finisher — 2 rounds",fin:true,trackable:true,rounds:"2 rounds",cs:[
+        {n:"Row",v:"250m",noWeight:true},
+        {n:"Burpee",v:"8 reps"},
+        {n:"Mountain climbers",v:"20 reps"},
+        {n:"Rest",v:"45s"},
+      ]},
     ]},
 
     // ── D5: Hybrid Strength II ────────────────────────────────────────────────
-    {num:"D5",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · add banana/dates pre-workout on heavy days",name:"Hybrid Strength II",title:"Hybrid Strength II",tag:"hybrid",dur:"55 min",int:92,ic:"#e8ff47",secs:[
+    {num:"D5",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · add banana/dates pre-workout on heavy days",
+     name:"Hybrid Strength II",title:"Hybrid Strength II",tag:"hybrid",dur:"57 min",int:92,ic:"#e8ff47",secs:[
       {lbl:"Warm-Up — 5 min",exs:[
         {id:"fri-wu-1",ic:"🚴",n:"Bike erg progressive",s:"4 min",note:"Build to 85% MHR",noWeight:true},
         {id:"fri-wu-2",ic:"🔄",n:"Banded abductions + shoulder CARs",s:"2x12",note:"Prime glutes and shoulders",noWeight:true},
       ]},
-      {lbl:"Complex A — Lower — 18 min",exs:[
-        {id:"fri-a1",ic:"🏋️",n:d5Lower,s:tdlS,note:d5LNote},
-        {id:"fri-a2",ic:"⚡",n:d5Jump,s:"4x4",note:d5JNote},
+      {lbl:"Strength Complex A — Lower — 18 min",exs:[
+        {id:"fri-a1",ic:"🏋️",n:d5LowerName,s:d5LowerS,note:d5LowerNote},
+        {id:"fri-a2",ic:"⚡",n:d5JumpName,s:"4x4",note:d5JumpNote,noWeight:p===1||p===2},
       ]},
-      {lbl:"Complex B — Upper — 15 min",exs:[
-        {id:"fri-b1",ic:"💪",n:"Push Press",s:ppS,note:"Leg drive into lockout"},
-        {id:"fri-b2",ic:"🔵",n:d5Pull,s:puS,note:"",banded:true},
+      {lbl:"Strength Complex B — Upper — 15 min",exs:[
+        {id:"fri-b1",ic:"💪",n:d5PullName,s:d5PullS,note:d5PullNote},
+        {id:"fri-b2",ic:"🔵",n:d5BpuName,s:d5BpuS,note:"",banded:true},
       ]},
+      ...(p>1?[{lbl:"Hypertrophy — 10 min",exs:[
+        {id:"fri-b3",ic:"🦵",n:d5CalfName,s:d5CalfS,note:d5CalfNote},
+        {id:"fri-c1",ic:"🔙",n:d5RowName,s:d5RowS,note:d5RowNote},
+      ]}]:[]),
       {lbl:`AMRAP — ${amrp}`,fin:true,trackable:true,rounds:amrp,cs:[
-        {n:d5A1,v:"8 reps"},{n:d5A2,v:"5 reps"},{n:d5A3,v:"10 reps"},
+        {n:d5Fin1,v:d5Fin1v},{n:d5Fin2,v:d5Fin2v},{n:d5Fin3,v:d5Fin3v},
+      ]},
+      {lbl:"Finisher — 2 rounds",fin:true,trackable:true,rounds:"2 rounds",cs:[
+        {n:"Ski erg",v:"30s max"},{n:p===3?"DB Hang Clean":"Box jump",v:p===3?"6 reps":"8 reps"},
+        {n:"KB Swing",v:"15 reps"},{n:"Rest",v:"45s"},
       ]},
     ]},
 
     // ── D6: Conditioning + Endurance (optional) ───────────────────────────────
-    {num:"D6",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · run counts as steps · optional session",name:"Conditioning + Endurance",title:"Conditioning + Endurance — Optional",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
-      {lbl:"Aerobic Base — 18 min",exs:[
-        {id:"sat-wu-1",ic:"🏃",n:p===1?"Run (Zone 2)":p===2?"Run (Zone 2–3)":"Run (Zone 3)",s:p===1?"13 min":p===2?"15 min":"18 min",note:"65–70% MHR · nasal breathing",noWeight:true},
+    {num:"D6",kcal:2200,calNote:"148g protein · 260g carbs · 63g fat · run counts as steps · optional session",
+     name:"Conditioning + Endurance",title:"Conditioning + Endurance — Optional",tag:"cond",dur:"55 min",int:78,ic:"#47c8ff",secs:[
+      {lbl:"Aerobic Base",exs:[
+        {id:"sat-wu-1",ic:"🏃",n:"Run (Zone 2)",s:d6RunTime,note:d6RunNote,noWeight:true},
         {id:"sat-wu-2",ic:"🚵",n:"Rower easy",s:"5 min",note:"Flush the legs",noWeight:true},
       ]},
       {lbl:`Lactate Intervals — ${intv}`,exs:[
         {id:"sat-a1",ic:"⚡",n:`${intv} / 90s easy`,s:"Assault bike or row",note:"90–95% MHR on work intervals",noWeight:true},
       ]},
-      {lbl:"Skill + Shoulder & Glute — 12 min",exs:[
-        {id:"sat-b1",ic:"🤸",n:d6S1,s:d6S1n,note:"",noWeight:true},
-        {id:"sat-b2",ic:"🔵",n:d6S2,s:d6S2n,note:p===3?"Jump to top · lower 5–8s slowly · builds pull-up strength":"",noWeight:true},
-        {id:"sat-b3",ic:"💪",n:d6Sh,s:clrS,note:"Constant tension · rear cable for better line of pull"},
-        {id:"sat-b4",ic:"🍑",n:d6Gl,s:abS,note:"Slow + controlled · glute med focus"},
+      {lbl:"Skill + Pull-up Progression — 12 min",exs:[
+        {id:"sat-b1",ic:"🤸",n:d6Skill1,s:d6Skill1s,note:"",noWeight:true},
+        {id:"sat-b2",ic:"🔵",n:d6Skill2,s:d6Skill2s,note:d6Skill2n,noWeight:true},
+        {id:"sat-b3",ic:"🤸",n:d6Skill3,s:d6Skill3s,note:"",noWeight:true},
       ]},
-      {lbl:"Ab Finisher — 7 min",fin:true,trackable:true,rounds:"3 rounds",cs:[
-        {n:satAb1,v:"10 reps"},
-        {n:satAb2,v:"25s/side"},
-        {n:p===1?"Dragon flag (negative / tuck)":p===2?"Dragon flag (negative full)":"Dragon flag (full)",v:"5 reps"},
+      ...(p>1?[{lbl:"Calf",exs:[
+        {id:"sat-c1",ic:"🦵",n:d6CalfName,s:d6CalfS,note:"Full ROM · pause at top"},
+      ]}]:[]),
+      {lbl:"Ab Finisher — 5 min",fin:true,trackable:true,rounds:"3 rounds",cs:[
+        {n:d6Ab1,v:"10 reps"},{n:d6Ab2,v:"25s/side"},{n:d6Ab3,v:p===1?"5 reps":"5 reps"},
         {n:"Rest",v:"30s"},
       ]},
       {lbl:"Cool-Down — 3 min",fin:true,cs:[
@@ -387,15 +455,11 @@ function getDays(w) {
     ]},
 
     // ── REST ──────────────────────────────────────────────────────────────────
-    {num:"R",kcal:1800,calNote:"148g protein · 160g carbs · 63g fat · low-GI carbs only · prioritise recovery",name:"Rest & Recovery",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
+    {num:"R",kcal:1800,calNote:"148g protein · 160g carbs · 63g fat · low-GI carbs only · prioritise recovery",
+     name:"Rest & Recovery",title:"Rest & Recovery",tag:"rest",dur:null,int:15,ic:"#5a5a72",rest:true},
   ].map(d=>({...d,puBand}));
 }
 
-
-// ── IndexedDB storage (persists on iOS PWA) ──────────────────────────────────
-const DB_NAME = "WorkoutDB";
-const DB_STORE = "data";
-const DB_KEY = "main";
 
 function openDB(){
   return new Promise((resolve,reject)=>{
@@ -513,46 +577,48 @@ function App() {
     const arr=[...(exSets[exId]||[])];
     arr[si]={...(arr[si]||{}),done:!arr[si]?.done};
     exSets[exId]=arr;
-    // Auto-mark exercise checkbox done when all sets are ticked
-    const allSetsDone=numSets>0&&arr.filter((_,i)=>i<numSets).every(s=>s&&s.done);
+    // Auto-mark exercise done ONLY when ALL sets are ticked
+    const doneSets=arr.filter((_,i)=>i<numSets).filter(s=>s&&s.done).length;
+    const allSetsDone=numSets>0&&doneSets===numSets;
     const done={...(dayData.done||{})};
+    // Also allow unticking — if not all done, uncheck exercise too
     if(allSetsDone) done[exId]=true;
+    else if(done[exId]) delete done[exId];
     updateDayData({exSets,done});
   }
   // Global history: for a given exId, scan ALL sessions newest-first for any saved sets
   function getLastSetsForEx(exId, exName) {
-    // Search ALL saved sessions newest-first regardless of which day/week
-    // Collect all session keys that have exSets, sort by recency
     const sessionKeys = Object.keys(allData).filter(k => {
       if (!k.match(/^w\d+-d\d+$/)) return false;
       const pd = allData[k];
       return pd && pd.exSets && pd.completedAt;
     });
-    // Sort newest first by completedAt timestamp
     sessionKeys.sort((a, b) => {
       const ta = allData[a].completedAt || "";
       const tb = allData[b].completedAt || "";
       return tb.localeCompare(ta);
     });
     for (const key of sessionKeys) {
-      // Skip current session
       if (key === `w${cWeek}-d${cDayIdx}`) continue;
       const pd = allData[key];
-      // Direct exercise ID match
-      if (pd.exSets[exId] && pd.exSets[exId].some(s => s && s.weight)) {
+      const [,wStr,,dStr] = key.match(/^w(\d+)-d(\d+)$/) || [];
+      if (!wStr) continue;
+      const sessionWeek = parseInt(wStr);
+      const di = parseInt(dStr);
+      const dayList = getDays(sessionWeek);
+      if (!dayList[di] || dayList[di].rest) continue;
+      const exs = dayList[di].secs.flatMap(s => s.exs || []);
+      // Match by BOTH id AND name — only pre-fill if same exercise name
+      // This prevents wrong weights when exercise changes between phases
+      const matchById = exs.find(e => e.id === exId);
+      if (matchById && matchById.n === exName && pd.exSets[exId] && pd.exSets[exId].some(s => s && s.weight)) {
         return pd.exSets[exId];
       }
-      // Name match — find same exercise name in that session
+      // Also search by name across all exercises in the session
       if (exName) {
-        const [,wStr,,dStr] = key.match(/^w(\d+)-d(\d+)$/) || [];
-        if (!wStr) continue;
-        const dayList = getDays(parseInt(wStr));
-        const di = parseInt(dStr);
-        if (!dayList[di] || dayList[di].rest) continue;
-        const exs = dayList[di].secs.flatMap(s => s.exs || []);
-        const match = exs.find(e => e.n === exName);
-        if (match && pd.exSets[match.id] && pd.exSets[match.id].some(s => s && s.weight)) {
-          return pd.exSets[match.id];
+        const matchByName = exs.find(e => e.n === exName);
+        if (matchByName && pd.exSets[matchByName.id] && pd.exSets[matchByName.id].some(s => s && s.weight)) {
+          return pd.exSets[matchByName.id];
         }
       }
     }
@@ -668,9 +734,9 @@ function App() {
                 const isA=w===cWeek;
                 return (
                   <button key={w} onClick={()=>{setCWeek(w);setCDayIdx(0);}}
-                    style={{flex:1,minWidth:48,padding:"7px 3px",background:isA?C.accent:"transparent",border:"none",borderRadius:7,color:isA?"#0a0a0f":wDone===6?"#6aff47":C.muted,fontFamily:"'DM Mono',monospace",fontSize:11,cursor:"pointer",fontWeight:isA?700:400,position:"relative",whiteSpace:"nowrap"}}>
+                    style={{flex:1,minWidth:48,padding:"7px 3px",background:isA?C.accent:"transparent",border:"none",borderRadius:7,color:isA?"#0a0a0f":wDone>=5?"#6aff47":wDone>0?"#fb923c":C.muted,fontFamily:"'DM Mono',monospace",fontSize:11,cursor:"pointer",fontWeight:isA?700:400,position:"relative",whiteSpace:"nowrap"}}>
                     Wk{w}
-                    {wDone>0&&!isA&&<span style={{position:"absolute",top:4,right:4,width:4,height:4,borderRadius:"50%",background:wDone===6?"#6aff47":"#fb923c",display:"block"}}/>}
+                    {wDone>0&&!isA&&<span style={{position:"absolute",top:4,right:4,width:4,height:4,borderRadius:"50%",background:wDone>=5?"#6aff47":"#fb923c",display:"block"}}/>}
                   </button>
                 );
               })}
