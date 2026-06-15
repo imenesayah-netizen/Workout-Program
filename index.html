@@ -115,7 +115,7 @@ const PHASES = [
     id:2,label:"Phase 2",title:"BUILD",wks:"Weeks 5–8",
     desc:"Increase load & density. Transition to medium band.",
     weeks:{
-      5:{h:"WEEK 5 — Reload",     rest:"75s str · 45s cond",rpe:"RPE 8",  pu:"Medium band · 3×6 · 3s eccentric"},
+      5:{h:"WEEK 5 — Reload",     rest:"75s str · 45s cond",rpe:"RPE 8",  pu:"Medium band · pause 1s at top"},
       6:{h:"WEEK 6 — Add Volume", rest:"75s str · 45s cond",rpe:"RPE 8",  pu:"Medium band · 4×6 · Pause 1s at top"},
       7:{h:"WEEK 7 — Overload",   rest:"60s str · 40s cond",rpe:"RPE 8–9",pu:"Medium band · 4×8 · Max quality reps"},
       8:{h:"WEEK 8 — Deload",     rest:"90s all",           rpe:"RPE 6–7",pu:"Medium band · 3×5 · Perfect form only"},
@@ -248,12 +248,13 @@ function getDays(w) {
   const d5RowName   = p===1?null:p===2?"Landmine Row":"T-bar Row";
   const d5RowNote   = p===2?"Explosive pull · elbow drives back · each side":"Both hands · chest pad if available · lat focus";
   const d5RowS      = p===2?"3x10/side":"3x10";
-  const d5Fin1      = p===1?"DB Snatch (alternating)":p===2?"Ski erg":"Ski erg";
-  const d5Fin1v     = p===1?"8 reps":p===2?"30s max":"30s max";
-  const d5Fin2      = p===1?"Bar-facing burpees":p===2?"Box jump":"DB Hang Clean";
-  const d5Fin2v     = p===1?"5 reps":p===2?"8 reps":"6 reps";
-  const d5Fin3      = p===1?"Goblet squat":p===2?"KB Swing":"KB Swing";
-  const d5Fin3v     = p===1?"10 reps":p===2?"15 reps":"15 reps";
+  // D5 AMRAP exercises — different each phase
+  const d5Fin1      = p===1?"DB Snatch (alternating)":p===2?"KB Swing":"Barbell Thruster";
+  const d5Fin1v     = p===1?"8 reps":p===2?"15 reps":"10 reps";
+  const d5Fin2      = p===1?"Bar-facing burpees":p===2?"Box jump":"Pull-up attempt (thin band or unassisted)";
+  const d5Fin2v     = p===1?"5 reps":p===2?"8 reps":"5 reps";
+  const d5Fin3      = p===1?"Goblet squat":p===2?"Push-up to DB row":"Reverse lunge";
+  const d5Fin3v     = p===1?"10 reps":p===2?"8 reps":"10/side";
 
   // ── D6 ────────────────────────────────────────────────────────────────────
   const d6RunTime   = p===1?"13 min":p===2?"15 min":"18 min";
@@ -420,10 +421,6 @@ function getDays(w) {
       ]}]:[]),
       {lbl:`AMRAP — ${amrp}`,fin:true,trackable:true,rounds:amrp,cs:[
         {n:d5Fin1,v:d5Fin1v},{n:d5Fin2,v:d5Fin2v},{n:d5Fin3,v:d5Fin3v},
-      ]},
-      {lbl:"Finisher — 2 rounds",fin:true,trackable:true,rounds:"2 rounds",cs:[
-        {n:"Ski erg",v:"30s max"},{n:p===3?"DB Hang Clean":"Box jump",v:p===3?"6 reps":"8 reps"},
-        {n:"KB Swing",v:"15 reps"},{n:"Rest",v:"45s"},
       ]},
     ]},
 
