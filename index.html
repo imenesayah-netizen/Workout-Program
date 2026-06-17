@@ -15,14 +15,8 @@
 window.onerror = function(msg,src,line,col,err){
   document.getElementById('root').innerHTML='<p style="color:red">ERROR: '+msg+' line:'+line+'</p>';
 };
-// Manually trigger Babel after everything loads
-window.addEventListener('load', function() {
-  if (window.Babel) {
-    Babel.transformScriptTags();
-  }
-});
 </script>
-<script type="text/babel" data-type="module">
+<script type="text/babel" data-presets="react">
 const App = () => (
   <div>
     <h1>WORKOUT PROGRAMME</h1>
