@@ -1,4 +1,4 @@
-const CACHE = "workout-v5";
+const CACHE = "workout-v9";
 
 self.addEventListener("install", e => {
   e.waitUntil(
@@ -20,14 +20,11 @@ self.addEventListener("activate", e => {
   self.clients.claim();
 });
 
-// Network first for HTML so updates always come through
-// Cache first for everything else
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   const isHTML = e.request.mode === "navigate" ||
                  url.pathname.endsWith("index.html") ||
                  url.pathname.endsWith("/");
-
   if (isHTML) {
     e.respondWith(
       fetch(e.request)
