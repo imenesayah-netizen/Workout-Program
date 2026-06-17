@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/></head>
+<body style="background:#0a0a0f;color:#e8ff47;font-family:monospace;padding:20px">
+<h2>Cache Killer</h2>
+<div id="log"></div>
+<script>
+var log = function(msg, col) {
+  var d = document.createElement('div');
+  d.style.color = col || '#fff';
+  d.textContent = msg;
+  document.getElementById('log').appendChild(d);
+};
+
+// Kill all service workers
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    log('Found ' + regs.length + ' service workers', '#fb923c');
+    regs.forEach(function(r) { 
+      r.unregister();
+      log('Unregistered: ' + r.scope, '#6aff47');
+    });
+    if (regs.length === 0) log('No service workers found', '#47c8ff');
+  });
+}
+
+// Kill all caches
+if (window.caches) {
+  caches.keys().then(function(keys) {
+    log('Found ' + keys.length + ' caches', '#fb923c');
+    keys.forEach(function(k) {
+      caches.delete(k);
+      log('Deleted cache: ' + k, '#6aff47');
+    });
+    if (keys.length === 0) log('No caches found', '#47c8ff');
+  });
+}
+
+// Wait 2 seconds then redirect to index
+setTimeout(function() {
+  log('Redirecting to app...', '#e8ff47');
+  window.location.href = './index.html?nocache=' + Date.now();
+}, 3000);
+</script>
+</body>
+</html>
