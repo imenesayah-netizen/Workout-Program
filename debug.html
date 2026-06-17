@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/></head>
+<body style="background:#000;color:#fff;padding:20px;font-family:monospace">
+<div id="log"></div>
+<script>
+function log(msg, color){
+  var d = document.createElement('div');
+  d.style.color = color||'#fff';
+  d.style.marginBottom = '8px';
+  d.textContent = msg;
+  document.getElementById('log').appendChild(d);
+}
+
+log('Step 1: Plain JS works', '#6aff47');
+
+// Test localStorage
+try {
+  localStorage.setItem('test','1');
+  localStorage.removeItem('test');
+  log('Step 2: localStorage works', '#6aff47');
+} catch(e) {
+  log('Step 2 FAIL: ' + e.message, '#ff6b6b');
+}
+
+// Test IndexedDB
+try {
+  var r = indexedDB.open('test',1);
+  r.onsuccess = function(){ log('Step 3: IndexedDB works', '#6aff47'); };
+  r.onerror = function(e){ log('Step 3 FAIL: IndexedDB ' + e.target.error, '#ff6b6b'); };
+} catch(e) {
+  log('Step 3 FAIL: ' + e.message, '#ff6b6b');
+}
+</script>
+
+<!-- Test React CDN -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script>
+if(window.React) {
+  log('Step 4: React CDN loaded', '#6aff47');
+} else {
+  log('Step 4 FAIL: React not loaded', '#ff6b6b');
+}
+</script>
+
+<!-- Test Babel CDN -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+if(window.Babel) {
+  log('Step 5: Babel CDN loaded', '#6aff47');
+} else {
+  log('Step 5 FAIL: Babel not loaded', '#ff6b6b');
+}
+</script>
+
+<!-- Test Babel JSX parsing -->
+<script type="text/babel">
+  function Test() { return <div style={{color:'#6aff47'}}>Step 6: Babel JSX works</div>; }
+  ReactDOM.createRoot(document.getElementById('jsx')).render(<Test/>);
+</script>
+<div id="jsx" style="margin-bottom:8px"></div>
+
+<script>
+log('Step 7: All done - if you see this, everything works', '#e8ff47');
+</script>
+</body>
+</html>
