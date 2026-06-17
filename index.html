@@ -248,13 +248,12 @@ function getDays(w) {
   const d5RowName   = p===1?null:p===2?"Landmine Row":"T-bar Row";
   const d5RowNote   = p===2?"Explosive pull · elbow drives back · each side":"Both hands · chest pad if available · lat focus";
   const d5RowS      = p===2?"3x10/side":"3x10";
-  // D5 AMRAP exercises — different each phase
-  const d5Fin1      = p===1?"DB Snatch (alternating)":p===2?"KB Swing":"Barbell Thruster";
-  const d5Fin1v     = p===1?"8 reps":p===2?"15 reps":"10 reps";
-  const d5Fin2      = p===1?"Bar-facing burpees":p===2?"Box jump":"Pull-up attempt (thin band or unassisted)";
-  const d5Fin2v     = p===1?"5 reps":p===2?"8 reps":"5 reps";
-  const d5Fin3      = p===1?"Goblet squat":p===2?"Push-up to DB row":"Reverse lunge";
-  const d5Fin3v     = p===1?"10 reps":p===2?"8 reps":"10/side";
+  const d5Fin1      = p===1?"DB Snatch (alternating)":p===2?"Ski erg":"Ski erg";
+  const d5Fin1v     = p===1?"8 reps":p===2?"30s max":"30s max";
+  const d5Fin2      = p===1?"Bar-facing burpees":p===2?"Box jump":"DB Hang Clean";
+  const d5Fin2v     = p===1?"5 reps":p===2?"8 reps":"6 reps";
+  const d5Fin3      = p===1?"Goblet squat":p===2?"KB Swing":"KB Swing";
+  const d5Fin3v     = p===1?"10 reps":p===2?"15 reps":"15 reps";
 
   // ── D6 ────────────────────────────────────────────────────────────────────
   const d6RunTime   = p===1?"13 min":p===2?"15 min":"18 min";
@@ -458,12 +457,10 @@ function getDays(w) {
 }
 
 
-// ── Storage constants ─────────────────────────────────────────────────────────
-const LS_KEY   = "workout-programme-v1";
-const DB_NAME  = "WorkoutDB";
-const DB_STORE = "data";
-const DB_KEY   = "main";
-
+const LS_KEY="workout-programme-v1";
+const DB_NAME="WorkoutDB";
+const DB_STORE="data";
+const DB_KEY="main";
 function openDB(){
   return new Promise((resolve,reject)=>{
     const req = indexedDB.open(DB_NAME, 1);
@@ -603,18 +600,25 @@ function App() {
       return tb.localeCompare(ta);
     });
     for (const key of sessionKeys) {
+      // Skip current session
       if (key === `w${cWeek}-d${cDayIdx}`) continue;
       const pd = allData[key];
-      const [,wStr,,dStr] = key.match(/^w(\d+)-d(\d+)$/) || [];
-      if (!wStr) continue;
-      const dayList = getDays(parseInt(wStr));
-      const di = parseInt(dStr);
-      if (!dayList[di] || dayList[di].rest) continue;
-      const exs = dayList[di].secs.flatMap(s => s.exs || []);
-      // Only pre-fill if exercise NAME matches (prevents wrong weights across phases)
-      const matchByName = exName && exs.find(e => e.n === exName);
-      if (matchByName && pd.exSets[matchByName.id] && pd.exSets[matchByName.id].some(s => s && s.weight)) {
-        return pd.exSets[matchByName.id];
+      // Direct exercise ID match
+      if (pd.exSets[exId] && pd.exSets[exId].some(s => s && s.weight)) {
+        return pd.exSets[exId];
+      }
+      // Name match — find same exercise name in that session
+      if (exName) {
+        const [,wStr,,dStr] = key.match(/^w(\d+)-d(\d+)$/) || [];
+        if (!wStr) continue;
+        const dayList = getDays(parseInt(wStr));
+        const di = parseInt(dStr);
+        if (!dayList[di] || dayList[di].rest) continue;
+        const exs = dayList[di].secs.flatMap(s => s.exs || []);
+        const match = exs.find(e => e.n === exName);
+        if (match && pd.exSets[match.id] && pd.exSets[match.id].some(s => s && s.weight)) {
+          return pd.exSets[match.id];
+        }
       }
     }
     return null;
