@@ -783,7 +783,19 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
   const ts=TAG_STYLES[day.tag];
   const allExIds=day.rest?[]:day.secs.flatMap(s=>s.exs||[]).map(e=>e.id);
   const checkedCount=allExIds.filter(id=>done[id]).length;
-  const allChecked=allExIds.length>0&&checkedCount===allExIds.length;
+  // Include finisher rounds in progress
+  const fins=dayData.fins||{};
+  const finSecs=day.rest?[]:day.secs.filter(s=>s.fin&&s.trackable&&s.rounds&&!isNaN(parseInt(s.rounds)));
+  const finTotal=finSecs.length;
+  const finDone=finSecs.filter((_,i)=>{
+    const key=`sec${day.secs.indexOf(finSecs[i])}`;
+    const rounds=fins[key]||[];
+    const needed=parseInt(finSecs[i].rounds)||0;
+    return rounds.filter(Boolean).length>=needed;
+  }).length;
+  const totalItems=allExIds.length+finTotal;
+  const totalDoneItems=checkedCount+finDone;
+  const allChecked=totalItems>0&&totalDoneItems===totalItems;
 
   if(day.rest) return (
     <div className="fade-in" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"28px 20px",textAlign:"center"}}>
@@ -931,9 +943,9 @@ function DayCard({day,dayData,dayKey2,onToggleEx,onNote,onRpe,onDur,onComplete,o
         {/* Progress mini bar */}
         <div style={{marginTop:14,display:"flex",alignItems:"center",gap:8}}>
           <div style={{flex:1,height:2,background:C.border,borderRadius:100,overflow:"hidden"}}>
-            <div style={{height:"100%",width:`${allExIds.length?checkedCount/allExIds.length*100:0}%`,background:C.accent,borderRadius:100,transition:"width .3s"}}/>
+            <div style={{height:"100%",width:`${totalItems?totalDoneItems/totalItems*100:0}%`,background:C.accent,borderRadius:100,transition:"width .3s"}}/>
           </div>
-          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,whiteSpace:"nowrap"}}>{checkedCount}/{allExIds.length} done</div>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:C.muted,whiteSpace:"nowrap"}}>{totalDoneItems}/{totalItems} done</div>
         </div>
 
         {/* Calorie target */}
